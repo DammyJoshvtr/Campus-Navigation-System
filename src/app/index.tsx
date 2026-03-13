@@ -1,5 +1,5 @@
+import GeneralButton from "@/components/GeneralButton";
 import { Image, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { image } from "../constant/images";
 
 export default function Index() {
@@ -10,9 +10,9 @@ export default function Index() {
         resizeMode="cover"
         className="absolute w-full h-full"
       />
-      <SafeAreaView className="flex-1">
-        {/* Place your login/welcome content here */}
-      </SafeAreaView>
+      <View className="absolute bottom-20 w-full justify-center items-center px-4">
+        <GeneralButton title="Get Started" showIcon={false} />
+      </View>
     </View>
   );
 }
