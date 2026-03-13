@@ -1,6 +1,7 @@
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
   title: string;
@@ -16,8 +17,10 @@ const GeneralButton = ({ title, showIcon }: Props) => {
         end={{ x: 1, y: 0.5 }}
         className="flex-1 justify-center items-center flex-row w-full h-full rounded-full"
       >
-        <Text className="text-white text-lg font-bold">{title}</Text>
-        {showIcon && <Text className="text-white ml-2">icon</Text>}
+        <View className="flex-row items-center gap-x-2">
+          <Text className="text-white text-[23px] font-bold">{title}</Text>
+          {showIcon && <AntDesign name="arrow-right" size={20} color="white" />}
+        </View>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -26,3 +29,20 @@ const GeneralButton = ({ title, showIcon }: Props) => {
 export default GeneralButton;
 
 const styles = StyleSheet.create({});
+
+// ============ PERSONAL NOTES ==============
+//1️⃣ Sans-serif fonts (Best for maps & UI)
+
+// Clean, modern, easy to read
+
+// Works well on mobile screens
+
+// Examples:
+
+// Font	Use Case
+// Roboto	Default for Android, very readable, professional
+// Inter	Modern, good for headings and body text
+// Poppins	Rounded, friendly feel, good for buttons
+// Open Sans	Neutral, works well for body text
+
+// ==============================================
