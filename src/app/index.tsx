@@ -1,7 +1,7 @@
 import GeneralButton from "@/components/GeneralButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { image } from "../constant/images";
 
@@ -22,7 +22,13 @@ export default function Index() {
       />
 
       {/* 3. Content Container (Top Layer) */}
-      <SafeAreaView className="flex-1 justify-end items-center pb-10">
+      <SafeAreaView className="flex-1 justify-end items-center px-4 pb-10 gap-y-5">
+        <View className="pl-4 flex w-full">
+          <Text className="text-5xl text-white font-bold leading">
+            Redemer's University{"\n"}Maps
+          </Text>
+        </View>
+
         <Link href="/signin" asChild>
           <GeneralButton title="Get Started" showIcon={true} />
         </Link>

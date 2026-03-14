@@ -14,7 +14,7 @@ interface Props extends TouchableOpacityProps {
   showIcon?: boolean;
 }
 
-const GeneralButton = forwardRef<TouchableOpacity, Props>(
+const GeneralButton = forwardRef<View, Props>(
   ({ title, showIcon, ...props }, ref) => {
     return (
       <TouchableOpacity
