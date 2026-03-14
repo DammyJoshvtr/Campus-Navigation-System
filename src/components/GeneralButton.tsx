@@ -1,30 +1,44 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { forwardRef } from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  View,
+} from "react-native";
 
-interface Props {
+interface Props extends TouchableOpacityProps {
   title: string;
   showIcon?: boolean;
 }
 
-const GeneralButton = ({ title, showIcon }: Props) => {
-  return (
-    <TouchableOpacity className="w-11/12 h-16 rounded-full overflow-hidden shadow-lg shadow-blue-500/40 active:opacity-80">
-      <LinearGradient
-        colors={["#38BDF8", "#2563EB"]} // Smooth transition from Sky Blue to Deep Blue
-        start={{ x: 0, y: 0.5 }}
-        end={{ x: 1, y: 0.5 }}
-        className="flex-1 justify-center items-center flex-row w-full h-full rounded-full"
+const GeneralButton = forwardRef<TouchableOpacity, Props>(
+  ({ title, showIcon, ...props }, ref) => {
+    return (
+      <TouchableOpacity
+        ref={ref}
+        className="w-11/12 h-16 rounded-full overflow-hidden shadow-lg shadow-blue-500/40 active:opacity-80"
+        {...props}
       >
-        <View className="flex-row items-center gap-x-2">
-          <Text className="text-white text-[23px] font-bold">{title}</Text>
-          {showIcon && <AntDesign name="arrow-right" size={20} color="white" />}
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-};
+        <LinearGradient
+          colors={["#38BDF8", "#2563EB"]} // Smooth transition from Sky Blue to Deep Blue
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          className="flex-1 justify-center items-center flex-row w-full h-full rounded-full"
+        >
+          <View className="flex-row items-center gap-x-2">
+            <Text className="text-white text-[23px] font-bold">{title}</Text>
+            {showIcon && (
+              <AntDesign name="arrow-right" size={20} color="white" />
+            )}
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  },
+);
 
 export default GeneralButton;
 
