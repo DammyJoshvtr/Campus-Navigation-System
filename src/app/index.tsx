@@ -24,7 +24,7 @@ export default function Index() {
       {/* 3. Content Container (Top Layer) */}
       <SafeAreaView className="flex-1 justify-end items-center px-4 pb-10 gap-y-5">
         <View className="pl-4 flex w-full">
-          <Text className="text-5xl text-white font-bold leading">
+          <Text className="text-5xl text-white font-bold font-home-bold leading">
             Redemer's University{"\n"}Maps
           </Text>
         </View>
