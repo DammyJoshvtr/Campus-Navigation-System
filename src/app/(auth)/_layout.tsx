@@ -31,7 +31,33 @@ const _layout = () => {
   };
 
   const validate = () => {
-    return <View></View>;
+    return (
+      <View className="p-4 gap-4">
+        {/* Logo */}
+        <View className="flex-row gap-x-1 items-center">
+          <Image
+            source={icon.logo}
+            resizeMode="contain"
+            className="w-14 h-14"
+          />
+
+          <Text className="font-home-bold text-white text-[20px]">
+            RUN MAPS
+          </Text>
+        </View>
+
+        {/* Heading */}
+        <Text className="font-home-bold text-[40px] text-white">
+          Verify your{"\n"}Email Address
+        </Text>
+
+        {/* Subheading */}
+        <Text className="text-[16px] font-home-semibold text-gray-200">
+          We sent a verification link to your email.{"\n"}
+          Please check your inbox to continue.
+        </Text>
+      </View>
+    );
   };
 
   const pathname = usePathname();
@@ -39,10 +65,14 @@ const _layout = () => {
   const getHeading = () => {
     if (pathname.includes("signin")) {
       return signin();
-    } else if (pathname.includes("validate")) {
+    } else if (pathname.includes("verifyEmail")) {
       return validate();
     } else {
-      return "Redeemer's University Map";
+      return (
+        <Text className="font-home-bold text-[24px] text-white p-4">
+          Redeemer's University Map
+        </Text>
+      );
     }
   };
 
