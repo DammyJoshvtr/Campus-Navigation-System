@@ -60,3 +60,19 @@ const styles = StyleSheet.create({});
 // Open Sans	Neutral, works well for body text
 
 // ==============================================
+
+
+// =============TouchableOpacityProps==================
+// Because of extends TouchableOpacityProps, you can use
+
+// onPress, disabled, activeOpacity etc.
+
+// This allows a parent component to get the reference of the button.
+
+// Example:
+// const buttonRef = useRef(null);
+// <GeneralButton ref={buttonRef} /> 
+// Then the parent can do things like:
+// focus, measure position, animate
+// ==========================================================
+
