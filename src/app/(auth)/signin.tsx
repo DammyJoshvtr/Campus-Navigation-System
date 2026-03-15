@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const Signin = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("signup");
+  const [activeTab, setActiveTab] = useState("signup"); // State to handle Login and Signin UI
 
   const handleSignup = () => {
     setActiveTab("signup");
