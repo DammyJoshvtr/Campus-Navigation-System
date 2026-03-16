@@ -20,6 +20,8 @@ const Signin = () => {
   const handleButtonPress = () => {
     if (activeTab === "signup") {
       router.push("/verifyEmail");
+    } else if (activeTab === "signin") {
+      router.replace("/(tabs)/home");
     } else {
       router.replace("../index");
     }
