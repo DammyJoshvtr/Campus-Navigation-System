@@ -6,7 +6,7 @@ import { Text, View } from "react-native";
 const TabBarIcon = ({ focused, icon, name }: any) => {
   return (
     <View
-      className={`flex-row items-center justify-center w-44 h-20 mt-6 ${
+      className={`flex-row items-center justify-center w-44 h-16 mt-6 ${
         focused ? "bg-white/50 px-5 py-2 rounded-full w-52" : ""
       }`}
     >
@@ -32,7 +32,7 @@ const _layout = () => {
         tabBarShowLabel: false,
         tabBarStyle: {
           position: "absolute",
-          bottom: 32,
+          bottom: 40,
           marginHorizontal: 30,
           height: 60,
           backgroundColor: "#2563EB",
@@ -73,3 +73,9 @@ const _layout = () => {
 };
 
 export default _layout;
+
+
+// Expo
+// react-native-maps
+// OpenStreetMap tiles
+// GeoJSON campus data
