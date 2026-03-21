@@ -32,7 +32,7 @@ const _layout = () => {
         tabBarShowLabel: false,
         tabBarStyle: {
           position: "absolute",
-          bottom: 40,
+          bottom: 60,
           marginHorizontal: 30,
           height: 60,
           backgroundColor: "#2563EB",
@@ -73,7 +73,6 @@ const _layout = () => {
 };
 
 export default _layout;
-
 
 // Expo
 // react-native-maps

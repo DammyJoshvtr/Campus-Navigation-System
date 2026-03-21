@@ -21,7 +21,7 @@ const Signin = () => {
     if (activeTab === "signup") {
       router.push("/verifyEmail");
     } else if (activeTab === "signin") {
-      router.replace("/(tabs)/home");
+      router.replace("/home");
     } else {
       router.replace("../index");
     }
