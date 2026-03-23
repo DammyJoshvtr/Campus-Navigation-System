@@ -1,3 +1,5 @@
+import FAB from "@/components/Fab";
+import ScrollItems from "@/components/ScrollItems";
 import Searchbar from "@/components/Searchbar";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -20,6 +22,11 @@ const Home = () => {
       {/* Search Bar Overlay */}
       <View style={styles.searchContainer}>
         <Searchbar />
+        <ScrollItems />
+      </View>
+
+      <View className="absolute bottom-20 right-6">
+        <FAB onPress={() => console.log("Pressed")} />
       </View>
     </View>
   );
@@ -41,7 +48,7 @@ const styles = StyleSheet.create({
     top: 50,
     left: 20,
     right: 20,
-    height: 50,
+    gap: 10,
     justifyContent: "center",
 
     // nice shadow

@@ -2,12 +2,13 @@ import { AntDesign } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabBarIcon = ({ focused, icon, name }: any) => {
   return (
     <View
       className={`flex-row items-center justify-center w-44 h-16 mt-6 ${
-        focused ? "bg-white/50 px-5 py-2 rounded-full w-52" : ""
+        focused ? "bg-white/30 px-5 py-2 rounded-full w-52" : ""
       }`}
     >
       <AntDesign
@@ -25,23 +26,22 @@ const TabBarIcon = ({ focused, icon, name }: any) => {
 };
 
 const _layout = () => {
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          position: "absolute",
-          bottom: 60,
-          marginHorizontal: 30,
           height: 60,
-          backgroundColor: "#2563EB",
-          borderRadius: 35,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 8,
-          elevation: 8,
+          // backgroundColor: "#2563EB",
+          backgroundColor: "gray",
+          // shadowColor: "#000",
+          // shadowOffset: { width: 0, height: 4 },
+          // shadowOpacity: 0.15,
+          // shadowRadius: 8,
+          // elevation: 8,
+          bottom: insets.bottom,
         },
         tabBarItemStyle: {
           flex: 1,
@@ -56,6 +56,15 @@ const _layout = () => {
           title: "Home",
           tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} name="Home" icon="home" />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="events"
+        options={{
+          title: "events",
+          tabBarIcon: ({ focused }) => (
+            <TabBarIcon focused={focused} name="Events" icon="user" />
           ),
         }}
       />
