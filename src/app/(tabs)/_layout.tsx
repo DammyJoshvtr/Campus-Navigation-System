@@ -6,16 +6,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabBarIcon = ({ focused, icon, name }: any) => {
   return (
-    <View
-      className={`flex-row items-center justify-center w-44 h-16 mt-6 ${
-        focused ? "bg-white/30 px-5 py-2 rounded-full w-52" : ""
-      }`}
-    >
-      <AntDesign
-        name={icon}
-        size={focused ? 20 : 18}
-        color={focused ? "#2563EB" : "white"}
-      />
+    <View className="flex-col items-center justify-center w-44 h-16 gap-y-2 mt-6">
+      <View
+        className={`${focused && "bg-[#2563EB] w-20 h-7 "} rounded-full items-center justify-center`}
+      >
+        <AntDesign name={icon} size={focused ? 20 : 18} color="white" />
+      </View>
       {focused && (
         <Text className="text-[14px] font-semibold text-[#2563EB] ml-2">
           {name}
