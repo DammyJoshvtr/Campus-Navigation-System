@@ -1,8 +1,8 @@
-import GeneralButton from "@/components/GeneralButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import GeneralButton from "../../components/GeneralButton";
 
 const VerifyEmail = () => {
   return (
