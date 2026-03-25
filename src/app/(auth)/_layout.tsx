@@ -1,9 +1,9 @@
-import { icon } from "@/constant/icon";
-import { image } from "@/constant/images";
 import { Slot, usePathname } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { icon } from "../../constant/icon";
+import { image } from "../../constant/images";
 
 const _layout = () => {
   const signin = () => {

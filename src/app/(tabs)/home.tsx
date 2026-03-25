@@ -1,9 +1,9 @@
-import FAB from "@/components/Fab";
-import ScrollItems from "@/components/ScrollItems";
-import Searchbar from "@/components/Searchbar";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import MapView from "react-native-maps";
+import FAB from "../../components/Fab";
+import ScrollItems from "../../components/ScrollItems";
+import Searchbar from "../../components/Searchbar";
 
 const Home = () => {
   return (
