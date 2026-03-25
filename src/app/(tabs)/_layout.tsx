@@ -19,7 +19,7 @@ const TabBarIcon = ({ focused, icon, name }: any) => {
       )}
     </View>
   );
-};
+};  
 
 const _layout = () => {
   const insets = useSafeAreaInsets();
