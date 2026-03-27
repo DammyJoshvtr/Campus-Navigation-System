@@ -1,33 +1,52 @@
-import React from "react";
+import useUserLocation from "@/hooks/useLocation";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import React, { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import MapView from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
 
 const Home = () => {
+  const location = useUserLocation();
+
+  useEffect(() => {
+    if (location) {
+      console.log(location);
+    }
+  }, [location]);
+
+  if (!location) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
-      {/* Map */}
       <MapView
         style={styles.map}
         initialRegion={{
-          // latitude: 6.5244,
           latitude: 7.6786,
-          // longitude: 3.3792,
           longitude: 4.4532,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
-      />
+      >
+        <Marker
+          coordinate={{
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          }}
+        >
+          {/* <AntDesign name="enviromento" size={30} color="red" /> */}
+        </Marker>
+      </MapView>
 
-      {/* Search Bar Overlay */}
       <View style={styles.searchContainer}>
         <Searchbar />
         <ScrollItems />
       </View>
 
-      <View className="absolute bottom-20 right-6">
+      <View style={{ position: "absolute", bottom: 80, right: 24 }}>
         <FAB onPress={() => console.log("Pressed")} />
       </View>
     </View>

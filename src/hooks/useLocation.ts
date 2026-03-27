@@ -2,7 +2,7 @@ import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 
 function useUserLocation() {
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
   useEffect(() => {
     (async () => {
