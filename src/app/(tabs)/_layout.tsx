@@ -1,7 +1,7 @@
 import { AntDesign } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabBarIcon = ({ focused, icon, name }: any) => {
@@ -10,7 +10,11 @@ const TabBarIcon = ({ focused, icon, name }: any) => {
       <View
         className={`${focused && "bg-[#2563EB] w-20 h-7 "} rounded-full items-center justify-center`}
       >
-        <AntDesign name={icon} size={focused ? 20 : 18} color="white" />
+        <AntDesign
+          name={icon}
+          size={focused ? 20 : 18}
+          color={`${focused ? "white" : "black"}`}
+        />
       </View>
       {focused && (
         <Text className="text-[14px] font-semibold text-[#2563EB] ml-2">
@@ -19,7 +23,7 @@ const TabBarIcon = ({ focused, icon, name }: any) => {
       )}
     </View>
   );
-};  
+};
 
 const _layout = () => {
   const insets = useSafeAreaInsets();
@@ -31,7 +35,7 @@ const _layout = () => {
         tabBarStyle: {
           height: 60,
           // backgroundColor: "#2563EB",
-          backgroundColor: "gray",
+          backgroundColor: "white",
           // shadowColor: "#000",
           // shadowOffset: { width: 0, height: 4 },
           // shadowOpacity: 0.15,

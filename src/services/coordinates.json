@@ -1,0 +1,184 @@
+{
+  "locations": [
+    {
+      "id": 1,
+      "name": "21 - 24",
+      "coordinate": { "latitude": 7.681964, "longitude": 4.457061 }
+    },
+    {
+      "id": 2,
+      "name": "17 - 20",
+      "coordinate": { "latitude": 7.682052, "longitude": 4.457355 }
+    },
+    {
+      "id": 3,
+      "name": "13 - 16",
+      "coordinate": { "latitude": 7.682099, "longitude": 4.45753 }
+    },
+    {
+      "id": 4,
+      "name": "9 - 12",
+      "coordinate": { "latitude": 7.682193, "longitude": 4.458001 }
+    },
+    {
+      "id": 5,
+      "name": "5 - 8",
+      "coordinate": { "latitude": 7.682285, "longitude": 4.458214 }
+    },
+    {
+      "id": 6,
+      "name": "1 - 4",
+      "coordinate": { "latitude": 7.68231, "longitude": 4.458472 }
+    },
+    {
+      "id": 7,
+      "name": "Computing and Digital Tech Office",
+      "coordinate": { "latitude": 7.682476, "longitude": 4.458616 }
+    },
+    {
+      "id": 8,
+      "name": "Postgraduate College",
+      "coordinate": { "latitude": 7.682094, "longitude": 4.458695 }
+    },
+    {
+      "id": 9,
+      "name": "NLT",
+      "coordinate": { "latitude": 7.682003, "longitude": 4.458507 }
+    },
+    {
+      "id": 10,
+      "name": "MLT",
+      "coordinate": { "latitude": 7.681943, "longitude": 4.458076 }
+    },
+    {
+      "id": 11,
+      "name": "ICT Lab 2",
+      "coordinate": { "latitude": 7.681886, "longitude": 4.457794 }
+    },
+    {
+      "id": 12,
+      "name": "ICT Lab 1",
+      "coordinate": { "latitude": 7.681784, "longitude": 4.457469 }
+    },
+    {
+      "id": 13,
+      "name": "Boja Theatre Art",
+      "coordinate": { "latitude": 7.681695, "longitude": 4.457152 }
+    },
+    {
+      "id": 14,
+      "name": "Zenith ICT ATM",
+      "coordinate": { "latitude": 7.680956, "longitude": 4.456225 }
+    },
+    {
+      "id": 15,
+      "name": "Former Faculty of Management Science",
+      "coordinate": { "latitude": 7.681419, "longitude": 4.457116 }
+    },
+    {
+      "id": 16,
+      "name": "Building near Peace Park",
+      "coordinate": { "latitude": 7.680455, "longitude": 4.457356 }
+    },
+    {
+      "id": 17,
+      "name": "Faculty of Social Sciences",
+      "coordinate": { "latitude": 7.680592, "longitude": 4.457779 }
+    },
+    {
+      "id": 18,
+      "name": "Tekena Tamuno Library",
+      "coordinate": { "latitude": 7.681147, "longitude": 4.458117 }
+    },
+    {
+      "id": 19,
+      "name": "Former Natural Science Faculty",
+      "coordinate": { "latitude": 7.681247, "longitude": 4.458603 }
+    },
+    {
+      "id": 20,
+      "name": "Bursar / General Studies Office",
+      "coordinate": { "latitude": 7.680831, "longitude": 4.458734 }
+    },
+    {
+      "id": 21,
+      "name": "Registrar Office",
+      "coordinate": { "latitude": 7.680941, "longitude": 4.459156 }
+    },
+    {
+      "id": 22,
+      "name": "University Auditorium",
+      "coordinate": { "latitude": 7.680313, "longitude": 4.459676 }
+    },
+    {
+      "id": 23,
+      "name": "Staff Cooperative",
+      "coordinate": { "latitude": 7.678934, "longitude": 4.459755 }
+    },
+    {
+      "id": 24,
+      "name": "Nursery & Primary School",
+      "coordinate": { "latitude": 7.678966, "longitude": 4.459279 }
+    },
+    {
+      "id": 25,
+      "name": "Gethsemane Garden",
+      "coordinate": { "latitude": 7.679889, "longitude": 4.459026 }
+    },
+    {
+      "id": 26,
+      "name": "Vice Chancellor Office",
+      "coordinate": { "latitude": 7.680338, "longitude": 4.458345 }
+    },
+    {
+      "id": 27,
+      "name": "Peace Park",
+      "coordinate": { "latitude": 7.680013, "longitude": 4.456955 }
+    },
+    {
+      "id": 28,
+      "name": "Container",
+      "coordinate": { "latitude": 7.679519, "longitude": 4.456491 }
+    },
+    {
+      "id": 29,
+      "name": "Manna Palace",
+      "coordinate": { "latitude": 7.678753, "longitude": 4.456962 }
+    },
+    {
+      "id": 30,
+      "name": "Health Center",
+      "coordinate": { "latitude": 7.67762, "longitude": 4.456507 }
+    },
+    {
+      "id": 31,
+      "name": "RUNSA Shop",
+      "coordinate": { "latitude": 7.676868, "longitude": 4.454908 }
+    },
+    {
+      "id": 32,
+      "name": "Male Extension",
+      "coordinate": { "latitude": 7.676678, "longitude": 4.455415 }
+    },
+    {
+      "id": 33,
+      "name": "Chief Olanipekun Hall",
+      "coordinate": { "latitude": 7.677611, "longitude": 4.454607 }
+    },
+    {
+      "id": 34,
+      "name": "Couple Portion",
+      "coordinate": { "latitude": 7.675745, "longitude": 4.451565 }
+    },
+    {
+      "id": 35,
+      "name": "Chop LYFE",
+      "coordinate": { "latitude": 7.678271, "longitude": 4.452238 }
+    },
+    {
+      "id": 36,
+      "name": "Numbers Cafeteria",
+      "coordinate": { "latitude": 7.679443, "longitude": 4.451681 }
+    }
+  ]
+}
