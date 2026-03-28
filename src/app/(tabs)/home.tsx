@@ -1,7 +1,12 @@
-import useLocations from "@/hooks/getLocation";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+  Keyboard,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import MapView from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
@@ -9,68 +14,66 @@ import Searchbar from "../../components/Searchbar";
 
 const Home = () => {
   const router = useRouter();
-  const location = useLocations();
-
-  useEffect(() => {
-    console.log(location);
-  }, []);
-  /* const location = useUserLocation(); */
-
-  /* useEffect(() => {
-    if (location) {
-      console.log(location);
-    }
-  }, [location]); */
-
-  /* if (!location) {
-    return null;
-  } */
+  const [showSearches, setShowSearches] = useState(false);
 
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-        customMapStyle={[
-          {
-            featureType: "poi",
-            stylers: [{ visibility: "off" }],
-          },
-          {
-            featureType: "transit",
-            stylers: [{ visibility: "off" }],
-          },
-          {
-            featureType: "road",
-            stylers: [{ visibility: "simplified" }],
-          },
-          {
-            featureType: "administrative",
-            stylers: [{ visibility: "off" }],
-          },
-        ]}
-        initialRegion={{
-          latitude: 7.6786,
-          longitude: 4.4532,
-          latitudeDelta: 0.001,
-          longitudeDelta: 0.001,
-        }}
-      />
+    <TouchableWithoutFeedback
+      onPress={() => {
+        setShowSearches(false);
+        Keyboard.dismiss();
+      }}
+    >
+      <View style={styles.container}>
+        {/* MAP */}
+        <MapView
+          style={styles.map}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          customMapStyle={[
+            {
+              featureType: "poi",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "transit",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "road",
+              stylers: [{ visibility: "simplified" }],
+            },
+            {
+              featureType: "administrative",
+              stylers: [{ visibility: "off" }],
+            },
+          ]}
+          initialRegion={{
+            latitude: 7.6786,
+            longitude: 4.4532,
+            latitudeDelta: 0.001,
+            longitudeDelta: 0.001,
+          }}
+        />
 
-      <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={() => router.push("/Directions")}>
-          <View pointerEvents="none">
-            <Searchbar barText="Search" />
-          </View>
-        </TouchableOpacity>
-        <ScrollItems />
-      </View>
+        {/* SEARCH SECTION */}
+        <View style={styles.searchContainer}>
+          <Searchbar barText="Search" onFocus={() => setShowSearches(true)} />
 
-      <View style={{ position: "absolute", bottom: 80, right: 24 }}>
-        <FAB onPress={() => router.push("/Directions")} />
+          <ScrollItems />
+
+          {showSearches && (
+            <View style={styles.dropdown}>
+              <Text className="font-home-medium text-gray-700">Where To?</Text>
+            </View>
+          )}
+        </View>
+
+        {/* FLOATING BUTTON */}
+        <View style={styles.fab}>
+          <FAB onPress={() => router.push("/Directions")} />
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
   },
 
   map: {
-    ...StyleSheet.absoluteFill /* fills entire screen */,
+    ...StyleSheet.absoluteFill,
   },
 
   searchContainer: {
@@ -91,9 +94,24 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     gap: 10,
-    justifyContent: "center",
+    zIndex: 10,
+  },
 
-    /* nice shadow */
+  dropdown: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 10,
+    minHeight: 150,
+    maxHeight: 200,
     elevation: 5,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  fab: {
+    position: "absolute",
+    bottom: 80,
+    right: 24,
   },
 });
