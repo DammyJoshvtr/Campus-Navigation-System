@@ -15,16 +15,16 @@ const FAB = ({ onPress }: Props) => {
 
 const styles = StyleSheet.create({
   fab: {
-    // position: "absolute",
-    // bottom: 30,
-    // right: 20,
+    /* position: "absolute", */
+    /* bottom: 30, */
+    /* right: 20, */
     width: 60,
     height: 60,
     borderRadius: 30,
     backgroundColor: "#6200ee",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5, // Android shadow
+    elevation: 5 /* Android shadow */,
   },
 });
 
