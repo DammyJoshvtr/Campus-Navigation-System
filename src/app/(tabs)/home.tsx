@@ -1,28 +1,30 @@
 import useLocations from "@/hooks/getLocation";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import MapView from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
 
 const Home = () => {
+  const router = useRouter();
   const location = useLocations();
 
   useEffect(() => {
     console.log(location);
   }, []);
-  // const location = useUserLocation();
+  /* const location = useUserLocation(); */
 
-  // useEffect(() => {
-  //   if (location) {
-  //     console.log(location);
-  //   }
-  // }, [location]);
+  /* useEffect(() => {
+    if (location) {
+      console.log(location);
+    }
+  }, [location]); */
 
-  // if (!location) {
-  //   return null;
-  // }
+  /* if (!location) {
+    return null;
+  } */
 
   return (
     <View style={styles.container}>
@@ -54,28 +56,19 @@ const Home = () => {
           latitudeDelta: 0.001,
           longitudeDelta: 0.001,
         }}
-      >
-        {/* <Marker
-          coordinate={{
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          }}
-        > */}
-        {/* <AntDesign name="enviromento" size={30} color="red" /> */}
-        {/* </Marker> */}
-
-        {/* {location.map((loc) => (
-          <Marker key={loc.id} coordinate={loc.coordinate} title={loc.name} />
-        ))} */}
-      </MapView>
+      />
 
       <View style={styles.searchContainer}>
-        <Searchbar />
+        <TouchableOpacity onPress={() => router.push("/Directions")}>
+          <View pointerEvents="none">
+            <Searchbar barText="Search" />
+          </View>
+        </TouchableOpacity>
         <ScrollItems />
       </View>
 
       <View style={{ position: "absolute", bottom: 80, right: 24 }}>
-        <FAB onPress={() => console.log("Pressed")} />
+        <FAB onPress={() => router.push("/Directions")} />
       </View>
     </View>
   );
@@ -89,7 +82,7 @@ const styles = StyleSheet.create({
   },
 
   map: {
-    ...StyleSheet.absoluteFill, // fills entire screen
+    ...StyleSheet.absoluteFill /* fills entire screen */,
   },
 
   searchContainer: {
@@ -100,7 +93,7 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "center",
 
-    // nice shadow
+    /* nice shadow */
     elevation: 5,
   },
 });

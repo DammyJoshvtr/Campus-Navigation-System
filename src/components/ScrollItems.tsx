@@ -20,7 +20,7 @@ const ScrollItems = () => {
         {items.map((item) => (
           <View
             key={item}
-            className="p-3 min-w-24 bg-white rounded-full items-center elevation-sm"
+            className="p-3 min-w-24 bg-gray-100 rounded-full items-center elevation-sm"
           >
             <Text className="text-gray-400 font-medium">{item}</Text>
           </View>
