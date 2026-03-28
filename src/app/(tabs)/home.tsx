@@ -1,13 +1,17 @@
 import useLocations from "@/hooks/getLocation";
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
 
 const Home = () => {
   const location = useLocations();
+
+  useEffect(() => {
+    console.log(location);
+  }, []);
   // const location = useUserLocation();
 
   // useEffect(() => {
@@ -60,9 +64,9 @@ const Home = () => {
         {/* <AntDesign name="enviromento" size={30} color="red" /> */}
         {/* </Marker> */}
 
-        {location.map((loc) => (
+        {/* {location.map((loc) => (
           <Marker key={loc.id} coordinate={loc.coordinate} title={loc.name} />
-        ))}
+        ))} */}
       </MapView>
 
       <View style={styles.searchContainer}>

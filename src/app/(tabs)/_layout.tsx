@@ -1,7 +1,7 @@
 import { AntDesign } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabBarIcon = ({ focused, icon, name }: any) => {
@@ -64,7 +64,7 @@ const _layout = () => {
         options={{
           title: "events",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} name="Events" icon="user" />
+            <TabBarIcon focused={focused} name="Events" icon="calendar" />
           ),
         }}
       />
