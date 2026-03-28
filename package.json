@@ -33,6 +33,7 @@
     "expo-symbols": "~55.0.5",
     "expo-system-ui": "~55.0.9",
     "expo-web-browser": "~55.0.9",
+    "json-server": "^0.17.4",
     "nativewind": "^4.2.2",
     "prettier-plugin-tailwindcss": "^0.5.11",
     "react": "19.2.0",
