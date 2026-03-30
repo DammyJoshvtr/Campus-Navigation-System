@@ -7,7 +7,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import MapView from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
@@ -25,7 +24,7 @@ const Home = () => {
     >
       <View style={styles.container}>
         {/* MAP */}
-        <MapView
+        {/* <MapView
           style={styles.map}
           showsUserLocation={true}
           showsMyLocationButton={true}
@@ -53,7 +52,7 @@ const Home = () => {
             latitudeDelta: 0.001,
             longitudeDelta: 0.001,
           }}
-        />
+        /> */}
 
         {/* SEARCH SECTION */}
         <View style={styles.searchContainer}>
