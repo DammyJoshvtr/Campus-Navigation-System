@@ -1,15 +1,22 @@
 import RecentSearches from "@/components/RecentSearches";
 import ScrollItems from "@/components/ScrollItems";
 import Searchbar from "@/components/Searchbar";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Keyboard, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Directions = () => {
+  const inputRef = useRef<TextInput>(null);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
-    <SafeAreaView className="flex-1 bg-white px-4 gap-y-4">
+    <SafeAreaView className="flex-1 bg-blue-50 px-4 gap-y-4">
       <View className="gap-y-6">
-        <Searchbar barText="From" />
+        <Searchbar ref={inputRef} barText="From" />
         <Searchbar barText="To" />
       </View>
 

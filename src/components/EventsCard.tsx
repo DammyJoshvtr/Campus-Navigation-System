@@ -9,7 +9,6 @@ interface Props {
   date: String;
   time: String;
   status: String;
-  category: String;
   image?: any;
   organizer: String;
 }
@@ -21,7 +20,6 @@ const EventsCard = ({
   date,
   time,
   status,
-  category,
   image,
   organizer,
 }: Props) => {
@@ -85,17 +83,13 @@ const EventsCard = ({
             </Text>
           </View>
 
+          {/* Location */}
           <View className="flex-row items-center justify-center gap-x-1">
             <MapPin color="gray" size={15} />
             <Text className="text-xs text-gray-500 mt-1 font-home-medium">
               {location}
             </Text>
           </View>
-
-          {/* Category */}
-          <Text className="text-xs text-gray-400 font-home-medium">
-            {category}
-          </Text>
         </View>
       </View>
     </View>
