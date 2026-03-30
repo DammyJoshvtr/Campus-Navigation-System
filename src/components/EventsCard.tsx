@@ -1,3 +1,4 @@
+import { ArrowUpRight, MapPin } from "lucide-react-native";
 import React from "react";
 import { Image, Text, View } from "react-native";
 
@@ -42,6 +43,10 @@ const EventsCard = ({
           <Text className="text-base font-home-bold text-gray-900">
             {title}
           </Text>
+
+          <View className="bg-gray-100 w-9 h-9 rounded-full justify-center items-center">
+            <ArrowUpRight color="#2563EB" />
+          </View>
         </View>
 
         {/* Middle */}
@@ -80,9 +85,12 @@ const EventsCard = ({
             </Text>
           </View>
 
-          <Text className="text-xs text-gray-500 mt-1 font-home-medium">
-            {location}
-          </Text>
+          <View className="flex-row items-center justify-center gap-x-1">
+            <MapPin color="gray" size={15} />
+            <Text className="text-xs text-gray-500 mt-1 font-home-medium">
+              {location}
+            </Text>
+          </View>
 
           {/* Category */}
           <Text className="text-xs text-gray-400 font-home-medium">
