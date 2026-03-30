@@ -35,19 +35,19 @@ const Calendar = () => {
 
   return (
     <View style={styles.container}>
-      <View className="flex flex-row justify-between border-y-[1px] py-2">
+      <View className="flex flex-row justify-between  py-2">
         {dates.map((d, index) => (
           <View
             key={index}
             className={`${d.day === "Thurs" && "bg-[#2563EB] border-none"} gap-y-2 justify-center items-center rounded-full p-2 border-black w-16`}
           >
             <Text
-              className={`${d.day === "Thurs" && "text-white"} font-home-medium text-[25px]`}
+              className={`text-gray-400 ${d.day === "Thurs" && "text-white"} font-home-medium text-[25px]`}
             >
               {d.date}
             </Text>
             <Text
-              className={`${d.day === "Thurs" && "text-white"} font-home-medium text-sm`}
+              className={`text-gray-400 ${d.day === "Thurs" && "text-white"} font-home-medium text-sm`}
             >
               {d.day}
             </Text>
