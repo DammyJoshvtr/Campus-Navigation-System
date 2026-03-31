@@ -8,11 +8,15 @@ const TabBarIcon = ({ focused, name, icon }: any) => {
   return (
     <View className="flex-col items-center justify-center w-44 h-20 mt-6 bg-white">
       <View
-        className={`${focused && "bg-[#2563EB] w-20 h-10"} rounded-full items-center justify-center`}
+        className={`${focused && "bg-[#2563EB]/80 w-20 h-10"} rounded-full items-center justify-center`}
       >
         {icon}
       </View>
-      <Text className="text-[14px] font-semibold text-[#2563EB] ml-2">
+      <Text
+        className={`text-[14px] font-semibold ml-2 ${
+          focused ? "text-[#2563EB]" : "text-[#6b7280]"
+        }`}
+      >
         {name}
       </Text>
     </View>
@@ -42,6 +46,7 @@ const _layout = () => {
         //   justifyContent: "center",
         //   alignItems: "center",
         // },
+        animation: "shift",
       }}
     >
       <Tabs.Screen
@@ -53,7 +58,7 @@ const _layout = () => {
               focused={focused}
               name="Home"
               icon={
-                <House size={25} color={`${focused ? "white" : "black"}`} />
+                <House size={25} color={`${focused ? "white" : "#6b7280"}`} />
               }
             />
           ),
@@ -70,7 +75,7 @@ const _layout = () => {
               icon={
                 <CalendarDays
                   size={25}
-                  color={`${focused ? "white" : "black"}`}
+                  color={`${focused ? "white" : "#6b7280"}`}
                 />
               }
             />
@@ -86,7 +91,10 @@ const _layout = () => {
               focused={focused}
               name="Profile"
               icon={
-                <UserRound size={25} color={`${focused ? "white" : "black"}`} />
+                <UserRound
+                  size={25}
+                  color={`${focused ? "white" : "#6b7280"}`}
+                />
               }
             />
           ),
