@@ -1,26 +1,20 @@
-import { AntDesign } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { CalendarDays, House, UserRound } from "lucide-react-native";
 import React from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const TabBarIcon = ({ focused, icon, name }: any) => {
+const TabBarIcon = ({ focused, name, icon }: any) => {
   return (
-    <View className="flex-col items-center justify-center w-44 h-16 gap-y-2 mt-6">
+    <View className="flex-col items-center justify-center w-44 h-20 mt-6 bg-white">
       <View
-        className={`${focused && "bg-[#2563EB] w-20 h-7 "} rounded-full items-center justify-center`}
+        className={`${focused && "bg-[#2563EB] w-20 h-10"} rounded-full items-center justify-center`}
       >
-        <AntDesign
-          name={icon}
-          size={focused ? 20 : 18}
-          color={`${focused ? "white" : "black"}`}
-        />
+        {icon}
       </View>
-      {focused && (
-        <Text className="text-[14px] font-semibold text-[#2563EB] ml-2">
-          {name}
-        </Text>
-      )}
+      <Text className="text-[14px] font-semibold text-[#2563EB] ml-2">
+        {name}
+      </Text>
     </View>
   );
 };
@@ -43,11 +37,11 @@ const _layout = () => {
           // elevation: 8,
           bottom: insets.bottom,
         },
-        tabBarItemStyle: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        },
+        // tabBarItemStyle: {
+        //   flex: 1,
+        //   justifyContent: "center",
+        //   alignItems: "center",
+        // },
       }}
     >
       <Tabs.Screen
@@ -55,7 +49,13 @@ const _layout = () => {
         options={{
           title: "Home",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} name="Home" icon="home" />
+            <TabBarIcon
+              focused={focused}
+              name="Home"
+              icon={
+                <House size={25} color={`${focused ? "white" : "black"}`} />
+              }
+            />
           ),
         }}
       />
@@ -64,7 +64,16 @@ const _layout = () => {
         options={{
           title: "events",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} name="Events" icon="calendar" />
+            <TabBarIcon
+              focused={focused}
+              name="Events"
+              icon={
+                <CalendarDays
+                  size={25}
+                  color={`${focused ? "white" : "black"}`}
+                />
+              }
+            />
           ),
         }}
       />
@@ -73,7 +82,13 @@ const _layout = () => {
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} name="Profile" icon="user" />
+            <TabBarIcon
+              focused={focused}
+              name="Profile"
+              icon={
+                <UserRound size={25} color={`${focused ? "white" : "black"}`} />
+              }
+            />
           ),
         }}
       />
