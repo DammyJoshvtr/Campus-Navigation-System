@@ -7,6 +7,7 @@ type Location = {
     latitude: number;
     longitude: number;
   };
+  type: string;
 };
 
 const useLocations = () => {
@@ -32,7 +33,7 @@ const useLocations = () => {
     fetchLocations();
   }, []);
 
-  return {coords, loading};
+  return { coords, loading };
 };
 
 export default useLocations;
