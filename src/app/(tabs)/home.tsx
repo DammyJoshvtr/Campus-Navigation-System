@@ -10,33 +10,47 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import MapView, { Callout, Marker } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
 
+const typeStyles: any = {
+  "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
+  Faculty: { bg: "#E8F5E9", text: "#43A047" },
+  Library: { bg: "#F3E5F5", text: "#8E24AA" },
+  Laboratory: { bg: "#FFF3E0", text: "#FB8C00" },
+  Administrative: { bg: "#ECEFF1", text: "#546E7A" },
+  "Event Centre": { bg: "#FCE4EC", text: "#D81B60" },
+  "Food & Dining": { bg: "#FFF8E1", text: "#F57F17" },
+  Health: { bg: "#E0F7FA", text: "#00838F" },
+  Shopping: { bg: "#EDE7F6", text: "#5E35B1" },
+  Recreation: { bg: "#E8F5E9", text: "#2E7D32" },
+  Hostel: { bg: "#E1F5FE", text: "#0277BD" },
+  School: { bg: "#F1F8E9", text: "#7CB342" },
+};
+
 const Home = () => {
   const router = useRouter();
   const [showSearches, setShowSearches] = useState(false);
-
-  // const [loading, setLoading] = useState(null)
-
-  // const coords = useLocations()useLoa;
-
   const [searchText, setSearchText] = useState("");
 
-  const { coords, loading } = useLocations();
+  const { coords = [], loading } = useLocations(); // ✅ safe default
 
   const filteredLocations =
     searchText.trim().length > 0
-      ? coords.filter((item) =>
-          item.name.toLowerCase().includes(searchText.toLowerCase()),
+      ? coords.filter((item: any) =>
+          item.name.toLowerCase().includes(searchText.toLowerCase())
         )
       : [];
 
+  // ✅ Show all when not searching
+  const displayedLocations =
+    searchText.trim().length > 0 ? filteredLocations : coords;
+
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View style={styles.center}>
         <ActivityIndicator />
       </View>
     );
@@ -53,26 +67,8 @@ const Home = () => {
         {/* MAP */}
         <MapView
           style={styles.map}
-          showsUserLocation={true}
-          showsMyLocationButton={true}
-          customMapStyle={[
-            {
-              featureType: "poi",
-              stylers: [{ visibility: "off" }],
-            },
-            {
-              featureType: "transit",
-              stylers: [{ visibility: "off" }],
-            },
-            {
-              featureType: "road",
-              stylers: [{ visibility: "simplified" }],
-            },
-            {
-              featureType: "administrative",
-              stylers: [{ visibility: "off" }],
-            },
-          ]}
+          showsUserLocation
+          showsMyLocationButton
           initialRegion={{
             latitude: 7.6786,
             longitude: 4.4532,
@@ -80,30 +76,17 @@ const Home = () => {
             longitudeDelta: 0.001,
           }}
         >
-          {!loading &&
-            coords?.length > 0 &&
-            filteredLocations.map((item) => (
-              <Marker
-                key={item.id}
-                coordinate={{
-                  latitude: item.coordinate.latitude,
-                  longitude: item.coordinate.longitude,
-                }}
-              >
-                <Callout tooltip>
-                  <View
-                    style={{
-                      backgroundColor: "white",
-                      padding: 10,
-                      borderRadius: 10,
-                      elevation: 5,
-                    }}
-                  >
-                    <Text>{item.name}</Text>
-                  </View>
-                </Callout>
-              </Marker>
-            ))}
+          {displayedLocations.map((item: any) => (
+            <Marker
+              key={item.id}
+              coordinate={{
+                latitude: item.coordinate.latitude,
+                longitude: item.coordinate.longitude,
+              }}
+              title={item.name}
+              description={item.type || "Location"}
+            />
+          ))}
         </MapView>
 
         {/* SEARCH SECTION */}
@@ -111,27 +94,63 @@ const Home = () => {
           <Searchbar
             barText="Search"
             onFocus={() => setShowSearches(true)}
-            onChangeText={(text) => setSearchText(text)}
+            onChangeText={(text: string) => setSearchText(text)}
           />
 
           <ScrollItems />
 
           {showSearches && (
-            <ScrollView contentContainerStyle={styles.dropdown}>
+            <ScrollView
+              style={styles.dropdown}
+              contentContainerStyle={styles.dropdownContent}
+              keyboardShouldPersistTaps="handled"
+            >
               {filteredLocations.length > 0 ? (
-                filteredLocations.map((item) => (
-                  <View className="h-9 bg-gray-400 gap-y-3">
-                    <Text key={item.id}>{item.name}</Text>
-                  </View>
-                ))
+                filteredLocations.map((item: any) => {
+                  const style =
+                    typeStyles[item.type] || {
+                      bg: "#E5E7EB",
+                      text: "#374151",
+                    };
+
+                  return (
+                    <View key={item.id} style={styles.resultCard}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.title}>{item.name}</Text>
+
+                        <View
+                          style={[
+                            styles.typeBadge,
+                            { backgroundColor: style.bg },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.typeText,
+                              { color: style.text },
+                            ]}
+                          >
+                            {item.type || "Unknown"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.circle} />
+                    </View>
+                  );
+                })
               ) : (
-                <Text>No results found</Text>
+                <View style={styles.noResult}>
+                  <Text style={styles.noResultText}>
+                    No results found
+                  </Text>
+                </View>
               )}
             </ScrollView>
           )}
         </View>
 
-        {/* FLOATING BUTTON */}
+        {/* FAB */}
         <View style={styles.fab}>
           <FAB onPress={() => router.push("/Directions")} />
         </View>
@@ -143,12 +162,16 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 
   map: {
     ...StyleSheet.absoluteFill,
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   searchContainer: {
@@ -161,13 +184,61 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-    padding: 10,
-    minHeight: 150,
-    maxHeight: 200,
-    elevation: 5,
-    display: "flex",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    maxHeight: 250,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+  },
+
+  dropdownContent: {
+    paddingVertical: 8,
+  },
+
+  resultCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+
+  title: {
+    fontSize: 15,
+    color: "#1F2937",
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  typeBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+
+  typeText: {
+    fontSize: 11,
+    fontWeight: "500",
+  },
+
+  circle: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: "#E5E7EB",
+  },
+
+  noResult: {
+    padding: 20,
+    alignItems: "center",
+  },
+
+  noResultText: {
+    color: "#6B7280",
   },
 
   fab: {
