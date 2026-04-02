@@ -40,7 +40,7 @@ const Home = () => {
   const filteredLocations =
     searchText.trim().length > 0
       ? coords.filter((item: any) =>
-          item.name.toLowerCase().includes(searchText.toLowerCase())
+          item.name.toLowerCase().includes(searchText.toLowerCase()),
         )
       : [];
 
@@ -99,55 +99,52 @@ const Home = () => {
 
           <ScrollItems />
 
-          {showSearches && (
-            <ScrollView
-              style={styles.dropdown}
-              contentContainerStyle={styles.dropdownContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {filteredLocations.length > 0 ? (
-                filteredLocations.map((item: any) => {
-                  const style =
-                    typeStyles[item.type] || {
-                      bg: "#E5E7EB",
-                      text: "#374151",
-                    };
+          <ScrollView
+            // By conditionally applying height and elevation, we can hide the component
+            // without unmounting it. This is a common strategy to prevent a race condition
+            // on the native UI thread that can cause the 'Unable to find viewState' error,
+            // especially when using the new architecture (Fabric).
+            style={[
+              styles.dropdown,
+              !showSearches && { height: 0, elevation: 0 },
+            ]}
+            contentContainerStyle={styles.dropdownContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            {filteredLocations.length > 0 ? (
+              filteredLocations.map((item: any) => {
+                const style = typeStyles[item.type] || {
+                  bg: "#E5E7EB",
+                  text: "#374151",
+                };
 
-                  return (
-                    <View key={item.id} style={styles.resultCard}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.title}>{item.name}</Text>
+                return (
+                  <View key={item.id} style={styles.resultCard}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.title}>{item.name}</Text>
 
-                        <View
-                          style={[
-                            styles.typeBadge,
-                            { backgroundColor: style.bg },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.typeText,
-                              { color: style.text },
-                            ]}
-                          >
-                            {item.type || "Unknown"}
-                          </Text>
-                        </View>
+                      <View
+                        style={[
+                          styles.typeBadge,
+                          { backgroundColor: style.bg },
+                        ]}
+                      >
+                        <Text style={[styles.typeText, { color: style.text }]}>
+                          {item.type || "Unknown"}
+                        </Text>
                       </View>
-
-                      <View style={styles.circle} />
                     </View>
-                  );
-                })
-              ) : (
-                <View style={styles.noResult}>
-                  <Text style={styles.noResultText}>
-                    No results found
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
-          )}
+
+                    <View style={styles.circle} />
+                  </View>
+                );
+              })
+            ) : (
+              <View style={styles.noResult}>
+                <Text style={styles.noResultText}>No results found</Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
 
         {/* FAB */}
