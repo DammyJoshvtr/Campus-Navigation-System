@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
@@ -22,7 +23,16 @@ const Home = () => {
 
   // const coords = useLocations()useLoa;
 
+  const [searchText, setSearchText] = useState("");
+
   const { coords, loading } = useLocations();
+
+  const filteredLocations =
+    searchText.trim().length > 0
+      ? coords.filter((item) =>
+          item.name.toLowerCase().includes(searchText.toLowerCase()),
+        )
+      : [];
 
   if (loading) {
     return (
@@ -72,7 +82,7 @@ const Home = () => {
         >
           {!loading &&
             coords?.length > 0 &&
-            coords.map((item) => (
+            filteredLocations.map((item) => (
               <Marker
                 key={item.id}
                 coordinate={{
@@ -98,14 +108,26 @@ const Home = () => {
 
         {/* SEARCH SECTION */}
         <View style={styles.searchContainer}>
-          <Searchbar barText="Search" onFocus={() => setShowSearches(true)} />
+          <Searchbar
+            barText="Search"
+            onFocus={() => setShowSearches(true)}
+            onChangeText={(text) => setSearchText(text)}
+          />
 
           <ScrollItems />
 
           {showSearches && (
-            <View style={styles.dropdown}>
-              <Text className="font-home-medium text-gray-700">Where To?</Text>
-            </View>
+            <ScrollView contentContainerStyle={styles.dropdown}>
+              {filteredLocations.length > 0 ? (
+                filteredLocations.map((item) => (
+                  <View className="h-9 bg-gray-400 gap-y-3">
+                    <Text key={item.id}>{item.name}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text>No results found</Text>
+              )}
+            </ScrollView>
           )}
         </View>
 
@@ -146,8 +168,6 @@ const styles = StyleSheet.create({
     maxHeight: 200,
     elevation: 5,
     display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
   },
 
   fab: {
