@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
 
+type Location = {
+  id: number;
+  name: string;
+  coordinate: {
+    latitude: number;
+    longitude: number;
+  };
+};
+
 const useLocations = () => {
-  const [coords, setCoords] = useState([]);
+  const [coords, setCoords] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchLocations = async () => {
       setLoading(true);
-      const apiUrl = "http://10.0.2.2:3000/locations";
+      const apiUrl = "http://192.168.93.167:3000/locations";
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -23,7 +32,7 @@ const useLocations = () => {
     fetchLocations();
   }, []);
 
-  return coords;
+  return {coords, loading};
 };
 
 export default useLocations;

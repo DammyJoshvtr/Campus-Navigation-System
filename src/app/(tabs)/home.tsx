@@ -1,13 +1,15 @@
+import useLocations from "@/hooks/getLocation";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Keyboard,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import MapView from "react-native-maps";
+import MapView, { Callout, Marker } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
@@ -15,6 +17,20 @@ import Searchbar from "../../components/Searchbar";
 const Home = () => {
   const router = useRouter();
   const [showSearches, setShowSearches] = useState(false);
+
+  // const [loading, setLoading] = useState(null)
+
+  // const coords = useLocations()useLoa;
+
+  const { coords, loading } = useLocations();
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
     <TouchableWithoutFeedback
@@ -53,7 +69,32 @@ const Home = () => {
             latitudeDelta: 0.001,
             longitudeDelta: 0.001,
           }}
-        />
+        >
+          {!loading &&
+            coords?.length > 0 &&
+            coords.map((item) => (
+              <Marker
+                key={item.id}
+                coordinate={{
+                  latitude: item.coordinate.latitude,
+                  longitude: item.coordinate.longitude,
+                }}
+              >
+                <Callout tooltip>
+                  <View
+                    style={{
+                      backgroundColor: "white",
+                      padding: 10,
+                      borderRadius: 10,
+                      elevation: 5,
+                    }}
+                  >
+                    <Text>{item.name}</Text>
+                  </View>
+                </Callout>
+              </Marker>
+            ))}
+        </MapView>
 
         {/* SEARCH SECTION */}
         <View style={styles.searchContainer}>
