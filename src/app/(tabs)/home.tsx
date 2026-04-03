@@ -51,7 +51,7 @@ const Home = () => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator style={styles.activity} />
       </View>
     );
   }
@@ -242,5 +242,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 80,
     right: 24,
+  },
+  activity: {
+    width: 150,
+    height: 150,
+    borderWidth: 2,
   },
 });
