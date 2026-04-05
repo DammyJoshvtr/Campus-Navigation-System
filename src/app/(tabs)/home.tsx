@@ -35,7 +35,7 @@ const Home = () => {
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const { coords = [], loading } = useLocations(); // ✅ safe default
+  const { coords = [], loading } = useLocations(); //  safe default
 
   const filteredLocations =
     searchText.trim().length > 0
@@ -44,14 +44,14 @@ const Home = () => {
         )
       : [];
 
-  // ✅ Show all when not searching
+  //  Show all when not searching
   const displayedLocations =
     searchText.trim().length > 0 ? filteredLocations : coords;
 
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator style={styles.activity} />
+        <ActivityIndicator />
       </View>
     );
   }
@@ -243,9 +243,9 @@ const styles = StyleSheet.create({
     bottom: 80,
     right: 24,
   },
-  activity: {
-    width: 150,
-    height: 150,
-    borderWidth: 2,
-  },
+  // activity: {
+  //   width: 150,
+  //   height: 150,
+  //   borderWidth: 2,
+  // },
 });
