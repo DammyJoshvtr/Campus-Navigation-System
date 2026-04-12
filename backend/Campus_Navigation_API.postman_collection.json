@@ -1,0 +1,306 @@
+{
+  "info": {
+    "name": "Campus Navigation API",
+    "description": "Complete Postman collection for the Campus Navigation System backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:5000/api" },
+    { "key": "access_token",  "value": "" },
+    { "key": "refresh_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/signup", "host": ["{{base_url}}"], "path": ["auth","signup"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ada Obi\",\n  \"email\": \"ada@university.edu\",\n  \"password\": \"Secure123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Account created. Please check your email to verify your account.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Ada Obi\",\n    \"email\": \"ada@university.edu\",\n    \"is_verified\": false,\n    \"created_at\": \"2024-07-15T10:00:00+00:00\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/verify/PASTE_TOKEN_FROM_EMAIL_HERE",
+              "host": ["{{base_url}}"],
+              "path": ["auth","verify","PASTE_TOKEN_FROM_EMAIL_HERE"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Email verified successfully. You can now log in.\",\n  \"data\": { \"id\": 1, \"is_verified\": true }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.access_token) {",
+                  "  pm.collectionVariables.set('access_token', json.data.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ada@university.edu\",\n  \"password\": \"Secure123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful.\",\n  \"data\": {\n    \"access_token\": \"eyJ...\",\n    \"refresh_token\": \"eyJ...\",\n    \"token_type\": \"Bearer\",\n    \"user\": { \"id\": 1, \"name\": \"Ada Obi\", \"email\": \"ada@university.edu\", \"is_verified\": true }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth","me"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{refresh_token}}" }],
+            "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth","refresh"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth","logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "List All Locations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/locations?page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["locations"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"locations\": [\n      { \"id\": 1, \"name\": \"Main Library\", \"latitude\": 6.5248, \"longitude\": 3.3792, \"type\": \"Library\" }\n    ],\n    \"pagination\": { \"page\": 1, \"per_page\": 20, \"total\": 14, \"pages\": 1 }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Filter Locations by Type",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/locations?type=Faculty",
+              "host": ["{{base_url}}"],
+              "path": ["locations"],
+              "query": [{ "key": "type", "value": "Faculty" }]
+            }
+          }
+        },
+        {
+          "name": "Search Locations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/locations/search?q=library",
+              "host": ["{{base_url}}"],
+              "path": ["locations","search"],
+              "query": [{ "key": "q", "value": "library" }]
+            }
+          }
+        },
+        {
+          "name": "Get Location by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/locations/1", "host": ["{{base_url}}"], "path": ["locations","1"] }
+          }
+        },
+        {
+          "name": "Get Location Types",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/locations/types", "host": ["{{base_url}}"], "path": ["locations","types"] }
+          }
+        },
+        {
+          "name": "Create Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Innovation Hub\",\n  \"description\": \"Co-working space for student startups.\",\n  \"latitude\": 6.5263,\n  \"longitude\": 3.3815,\n  \"type\": \"Faculty\",\n  \"building_code\": \"INN-01\",\n  \"floor\": 2\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Location created.\",\n  \"data\": { \"id\": 15, \"name\": \"Innovation Hub\", \"latitude\": 6.5263, \"longitude\": 3.3815, \"type\": \"Faculty\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/locations/1", "host": ["{{base_url}}"], "path": ["locations","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main Library (Renovated)\",\n  \"description\": \"Now with 24/7 access.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Location",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/locations/15", "host": ["{{base_url}}"], "path": ["locations","15"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Directions",
+      "item": [
+        {
+          "name": "Get Directions (Short Route)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/directions", "host": ["{{base_url}}"], "path": ["directions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": { \"lat\": 6.5244, \"lng\": 3.3792 },\n  \"destination\": { \"lat\": 6.5255, \"lng\": 3.3801 }\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Directions computed.\",\n  \"data\": {\n    \"distance\": \"155 m\",\n    \"distance_meters\": 154.92,\n    \"duration\": \"2 mins\",\n    \"duration_seconds\": 111,\n    \"route\": [\n      { \"lat\": 6.5244, \"lng\": 3.3792 },\n      { \"lat\": 6.5246, \"lng\": 3.3794 },\n      { \"lat\": 6.5248, \"lng\": 3.3796 },\n      { \"lat\": 6.5251, \"lng\": 3.3798 },\n      { \"lat\": 6.5255, \"lng\": 3.3801 }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Directions (Long Route, custom points)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/directions", "host": ["{{base_url}}"], "path": ["directions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": { \"lat\": 6.5235, \"lng\": 3.3780 },\n  \"destination\": { \"lat\": 6.5278, \"lng\": 3.3820 },\n  \"points\": 40\n}"
+            }
+          }
+        },
+        {
+          "name": "Directions — Missing Origin (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/directions", "host": ["{{base_url}}"], "path": ["directions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destination\": { \"lat\": 6.5280, \"lng\": 3.3810 }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/health", "host": ["http://localhost:5000"], "path": ["health"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "code": 200,
+              "body": "{ \"status\": \"ok\", \"service\": \"Campus Navigation API\" }"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
