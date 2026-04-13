@@ -15,7 +15,6 @@ import MapView, { Marker, Region } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
-import { Items } from "@expo/ui/swift-ui";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
