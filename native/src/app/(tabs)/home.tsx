@@ -15,6 +15,7 @@ import MapView, { Marker, Region } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
+import { Items } from "@expo/ui/swift-ui";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -41,24 +42,50 @@ const Home = () => {
   const { coords = [], loading } = useLocations(); //  safe default
 
   const getVisibleLocations = () => {
-    if (!region) return coords
+    if (!region) return coords;
 
-    if (region.latitudeDelta > 0.01) {
-      // VERY zoomed out → show only important types
+    const zoom = region.latitudeDelta;
+
+    console.log("Zoom:", zoom);
+
+    if (zoom > 0.05) {
       return coords.filter(
-        (item) =>
-          item.type === "Faculty" ||
-          item.type === "Library" ||
-          item.type === "Administrative",
+        (item) => item.type === "Faculty" || item.type === "Library",
       );
     }
 
-    if (region.latitudeDelta > 0.005) {
-      // medium zoom → show more
-      return coords.filter((item) => item.type !== "Lecture Rooms");
+    if (zoom > 0.01) {
+      return coords.filter(
+        (item) =>
+          ![
+            "Lecture Rooms",
+            "Faculty",
+            "Shopping",
+            "Event Centre",
+            "Recreation",
+            "Food & Dining",
+            "Laboratory",
+            "Library",
+          ].includes(item.type),
+      );
     }
 
-    // zoomed in → show everything
+    if (zoom > 0.005) {
+      return coords.filter(
+        (item) =>
+          ![
+            "Laboratory",
+            "Administrative",
+            "Event Centre",
+            "Food & Dining",
+            "Recreation",
+            "School",
+            "Hostel",
+            "Lecture Rooms",
+          ].includes(item.type),
+      );
+    }
+
     return coords;
   };
 
