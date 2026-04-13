@@ -41,7 +41,7 @@ const Home = () => {
   const { coords = [], loading } = useLocations(); //  safe default
 
   const getVisibleLocations = () => {
-    if (!region) return [];
+    if (!region) return coords
 
     if (region.latitudeDelta > 0.01) {
       // VERY zoomed out → show only important types
@@ -71,7 +71,7 @@ const Home = () => {
 
   //  Show all when not searching
   const displayedLocations =
-    searchText.trim().length > 0 ? filteredLocations : coords;
+    searchText.trim().length > 0 ? filteredLocations : getVisibleLocations();
 
   const mapStyle = [
     {
@@ -110,6 +110,7 @@ const Home = () => {
             latitudeDelta: 0.001,
             longitudeDelta: 0.001,
           }}
+          onRegionChangeComplete={(reg) => setRegion(reg)}
         >
           {displayedLocations.map((item: any) => (
             <Marker
@@ -289,7 +290,6 @@ const styles = StyleSheet.create({
   },
 
   mapName: {
-    backgroundColor: "white",
     padding: 6,
     borderRadius: 20,
     elevation: 5,

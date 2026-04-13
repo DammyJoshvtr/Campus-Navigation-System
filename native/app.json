@@ -18,7 +18,12 @@
         "monochromeImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.CampusNavigation"
+      "package": "com.anonymous.CampusNavigation",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDdz-pF4hrqls8WEndV1c3HbyVElEAa_UA"
+        }
+      }
     },
     "web": {
       "output": "static",
