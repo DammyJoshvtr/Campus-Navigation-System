@@ -17,7 +17,7 @@ const useLocations = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       setLoading(true);
-      const apiUrl = "http://192.168.104.171:3000/locations";
+      const apiUrl = "http://192.168.221.171:3000/locations";
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
