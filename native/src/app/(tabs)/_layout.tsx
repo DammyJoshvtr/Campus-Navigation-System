@@ -27,7 +27,7 @@ const TabBarIcon = ({ focused, name, icon }: any) => {
 const _layout = () => {
   const insets = useSafeAreaInsets();
   return (
-    <GestureHandlerRootView className="flex-1">
+    <View className="flex-1">
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -103,7 +103,7 @@ const _layout = () => {
           }}
         />
       </Tabs>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 
