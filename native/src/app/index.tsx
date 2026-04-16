@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function Index() {
   return (
-    <View className="flex-1">
+    <GestureHandlerRootView className="flex-1">
       {/* 1. Background Image (Bottom Layer) */}
       <Image
         source={image.background}
@@ -34,7 +34,7 @@ export default function Index() {
           <GeneralButton title="Get Started" showIcon={true} />
         </Link>
       </SafeAreaView>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
