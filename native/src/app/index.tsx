@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { image } from "../constant/images";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function Index() {
   return (
