@@ -4,8 +4,15 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import authSignin from "@/services/api";
+// import  from "@/hooks/useFetch";
+import useFetch from "@/hooks/useFetch";
 
 const Signin = () => {
+
+  // const {data, loading, error} = useFetch(() => authSignin({name: "John Doe", password: "password123", email: "email@example.com"}), false);
+
+
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("signup"); // State to handle Login and Signin UI
 
