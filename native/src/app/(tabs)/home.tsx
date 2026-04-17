@@ -1,7 +1,7 @@
 import useLocations from "@/hooks/getLocation";
 import { getColor, getIcon } from "@/services/iconUtitils";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -15,6 +15,8 @@ import MapView, { Marker, Region } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
+import LocationBottomSheet from "@/components/LocationBottomSheet";
+import BottomSheet from "@gorhom/bottom-sheet";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -35,6 +37,7 @@ const Home = () => {
   const router = useRouter();
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const sheetRef = useRef<BottomSheet | null>(null);
 
   const [region, setRegion] = useState<Region | null>(null);
 
@@ -116,14 +119,20 @@ const Home = () => {
 
   const nameText = "font-home-medium";
 
+  const handleOpenSheet = () => {
+    // snapPoints are ["25%", "50%"], so 1 is the 50% mark, 0 is 25%
+    sheetRef.current?.snapToIndex(1);
+  }
+
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        setShowSearches(false);
-        Keyboard.dismiss();
-      }}
-    >
-      <View style={styles.container}>
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          setShowSearches(false);
+          Keyboard.dismiss();
+        }}
+      >
+        <View style={styles.container}>
         {/* MAP */}
         <MapView
           style={styles.map}
@@ -146,6 +155,7 @@ const Home = () => {
                 longitude: item.coordinate.longitude,
               }}
               title={item.name}
+            onPress={() => handleOpenSheet()}
               description={item.type || "Location"}
             >
               <View style={styles.mapName}>
@@ -222,8 +232,11 @@ const Home = () => {
         <View style={styles.fab}>
           <FAB onPress={() => router.push("/Directions")} />
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+
+      <LocationBottomSheet ref={sheetRef} />
+    </>
   );
 };
 
