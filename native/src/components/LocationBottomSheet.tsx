@@ -1,31 +1,37 @@
-import React, { useMemo, useRef, forwardRef, useImperativeHandle } from "react";
-import { View, Text, Button } from "react-native";
+import React, { useCallback, useMemo, forwardRef } from "react";
+import { Text, StyleSheet } from "react-native";
 import BottomSheet, {
-  BottomSheetModal,
   BottomSheetView,
+  BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 
-const LocationSheet = forwardRef((props, ref) => {
-  const modalRef = useRef<BottomSheet>(null);
-
+const LocationBottomSheet = forwardRef<BottomSheet, {}>((props, ref) => {
   const snapPoints = useMemo(() => ["25%", "50%"], []);
 
-  // useImperativeHandle(ref, () => ({
-  //   open: () => modalRef.current?.expand(),
-  // }));
+  const backdrop = useCallback(
+    (backdropProps: any) => (
+      <BottomSheetBackdrop
+        {...backdropProps}
+        appearsOnIndex={1}
+        disappearsOnIndex={-1}
+      />
+    ),
+    [],
+  );
 
   return (
     <BottomSheet
-      ref={modalRef}
       index={-1}
       snapPoints={snapPoints}
-      enablePanDownToClose
+      ref={ref}
+      enablePanDownToClose={true}
+      backdropComponent={backdrop}
     >
       <BottomSheetView
         style={{ padding: 20 }}
         className="bg-black rounded-t-3xl"
       >
-        <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: "white" }}>
           Bottom Sheet Works 🎉
         </Text>
       </BottomSheetView>
@@ -33,4 +39,4 @@ const LocationSheet = forwardRef((props, ref) => {
   );
 });
 
-export default LocationSheet;
+export default LocationBottomSheet;
