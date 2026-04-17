@@ -1,11 +1,11 @@
-import React, { useRef } from "react";
-import { View, Text, Button } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useMemo, useRef } from "react";
+import { View, Text, StyleSheet, Button } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
-import LocationBottomSheet from "@/components/LocationBottomSheet";
 
-export default function Profile() {
-  const sheetRef = useRef<BottomSheet>(null);
+const Profile = () => {
+  const sheetRef = useRef<BottomSheet | null>(null);
+
+  const snapPoints = useMemo(() => ["25%", "50%"], []);
 
   const openSheet = () => {
     console.log("Opening sheet...");
@@ -13,14 +13,25 @@ export default function Profile() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Profile Screen</Text>
-        <Button title="Open Sheet" onPress={openSheet} />
-      </View>
+    <View style={styles.container}>
+      <Button title="Open Bottom Sheet" onPress={() => openSheet()} />
 
-      {/* IMPORTANT: MUST be inside same screen */}
-      <LocationBottomSheet ref={sheetRef} />
-    </SafeAreaView>
+      <BottomSheet index={1} snapPoints={snapPoints} ref={sheetRef}>
+        <View style={{ padding: 20 }} className="bg-black rounded-t-3xl">
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+            Bottom Sheet Works 🎉
+          </Text>
+        </View>
+      </BottomSheet>
+    </View>
   );
-}
+};
+
+export default Profile;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 50,
+  },
+});
