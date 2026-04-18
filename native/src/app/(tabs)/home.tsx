@@ -15,7 +15,7 @@ import MapView, { Marker, Region } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
-import LocationBottomSheet from "@/components/LocationBottomSheet";
+import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
 import BottomSheet from "@gorhom/bottom-sheet";
 
 const typeStyles: any = {
@@ -38,6 +38,7 @@ const Home = () => {
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
   const sheetRef = useRef<BottomSheet | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<any | null>(null)
 
   const [region, setRegion] = useState<Region | null>(null);
 
@@ -119,8 +120,9 @@ const Home = () => {
 
   const nameText = "font-home-medium";
 
-  const handleOpenSheet = () => {
+  const handleOpenSheet = (location: any) => {
     // snapPoints are ["25%", "50%"], so 1 is the 50% mark, 0 is 25%
+    setSelectedLocation(location);
     sheetRef.current?.snapToIndex(1);
   }
 
@@ -155,7 +157,7 @@ const Home = () => {
                 longitude: item.coordinate.longitude,
               }}
               title={item.name}
-            onPress={() => handleOpenSheet()}
+            onPress={() => handleOpenSheet(item)}
               description={item.type || "Location"}
             >
               <View style={styles.mapName}>
@@ -235,7 +237,7 @@ const Home = () => {
         </View>
       </TouchableWithoutFeedback>
 
-      <LocationBottomSheet ref={sheetRef} />
+      <LocationBottomSheet ref={sheetRef} location={selectedLocation} />
     </>
   );
 };

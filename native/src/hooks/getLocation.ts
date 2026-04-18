@@ -17,11 +17,11 @@ const useLocations = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       setLoading(true);
-      const apiUrl = "http://192.168.113.171:3000/locations";
+      const apiUrl = "http://192.168.107.171:3000/locations";
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        console.log(data);
+        console.log("Location data is Active...");
         setCoords(data);
       } catch (err) {
         console.error(err);
