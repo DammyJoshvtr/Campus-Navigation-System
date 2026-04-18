@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Button,
 } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import FAB from "../../components/Fab";
@@ -18,6 +19,7 @@ import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
 import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
 import BottomSheet from "@gorhom/bottom-sheet";
+import LocationError from "@/components/error/locationError";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -41,10 +43,16 @@ const Home = () => {
   const sheetRef = useRef<BottomSheet | null>(null);
   const mapRef = useRef<MapView | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
-
   const [region, setRegion] = useState<Region | null>(null);
+  const { coords = [], loading, error, refetch } = useLocations(); //  safe default
 
-  const { coords = [], loading } = useLocations(); //  safe default
+  React.useEffect(() => {
+    if (error) {
+      setLoadFailed(true);
+    }
+  }, [error]);
+
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const getVisibleLocations = () => {
     if (!region) return coords;
@@ -252,6 +260,17 @@ const Home = () => {
           </View>
         </View>
       </TouchableWithoutFeedback>
+
+      {/* Location Error */}
+      {loadFailed && (
+        <LocationError
+          reload={() => {
+            setLoadFailed(false);
+            refetch(); // 🔥 real reload
+          }} //  reset error and retry fetching
+          close={() => setLoadFailed(false)}
+        />
+      )}
 
       <LocationBottomSheet ref={sheetRef} location={selectedLocation} />
     </>
