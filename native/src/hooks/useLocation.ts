@@ -2,23 +2,34 @@ import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 
 export const useUserLocation = () => {
-  const [location, setLocation] =
-    useState<Location.LocationObjectCoords | null>(null);
+  const [location, setLocation] = useState<any>(null);
 
   useEffect(() => {
-    const getLocation = async () => {
+    let subscription: any;
+
+    const startTracking = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
-      if (status !== "granted") {
-        console.log("Permission denied");
-        return;
-      }
+      if (status !== "granted") return;
 
-      const loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc.coords);
+      subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 3000,
+          distanceInterval: 5,
+        },
+        (loc) => {
+          setLocation({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          });
+        }
+      );
     };
 
-    getLocation();
+    startTracking();
+
+    return () => subscription?.remove();
   }, []);
 
   return location;
