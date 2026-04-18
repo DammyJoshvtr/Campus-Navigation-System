@@ -55,6 +55,17 @@ const Home = () => {
     }
   }, [error]);
 
+  React.useEffect(() => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.002,
+        longitudeDelta: 0.002,
+      });
+    }
+  }, [userLocation]);
+
   const [loadFailed, setLoadFailed] = useState(false);
 
   const getVisibleLocations = () => {
@@ -149,20 +160,20 @@ const Home = () => {
   const handleGetDirections = (destination: any) => {
     if (!userLocation) return;
 
-    const route = [
-      {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
-      },
-      {
-        latitude: destination.coordinate.latitude,
-        longitude: destination.coordinate.longitude,
-      },
-    ];
+    const current = {
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+    };
+
+    const target = {
+      latitude: destination.coordinate.latitude,
+      longitude: destination.coordinate.longitude,
+    };
+
+    const route = [current, target];
 
     setRouteCoords(route);
 
-    // zoom map to fit both points
     mapRef.current?.fitToCoordinates(route, {
       edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
       animated: true,
