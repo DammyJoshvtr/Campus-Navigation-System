@@ -62,15 +62,15 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
           <ScrollView>
 
             {/* Location Name */}
-            <Text style={styles.title}>
+            <Text className="font-home-semibold">
               {location?.name || "Select a location"}
             </Text>
 
             {/* Type */}
-            <Text style={styles.type}>{location?.type || "No category"}</Text>
+            <Text style={styles.type} className="font-home-medium">{location?.type || "No category"}</Text>
 
             {/* Description */}
-            <Text style={styles.description}>
+            <Text style={styles.description} className="font-home-medium">
               {location?.description ||
                 "Tap on a marker to view more details about the location."}
             </Text>
@@ -78,17 +78,17 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
             {/* Action Buttons */}
             <View style={styles.actions}>
               <TouchableOpacity style={styles.primaryBtn}>
-                <Text style={styles.primaryText}>Get Directions</Text>
+                <Text className="font-home-bold text-white">Get Directions</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryBtn}>
-                <Text style={styles.secondaryText}>Save</Text>
+                <Text className="font-home-semibold">Save</Text>
               </TouchableOpacity>
             </View>
 
             {/* Events Descriptions */}
             <View>
-              <Text style={[styles.title, { marginTop: 30 }]}>
+              <Text style= {{ marginTop: 30 }} className="font-home-bold">
                 Events at this location
               </Text>
 
@@ -109,20 +109,21 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                               ? styles.statusUpcoming
                               : styles.statusEnded,
                         ]}
+                        className="font-home-regular"
                       >
                         <Text style={styles.statusText}>{event.status}</Text>
                       </View>
                     </View>
 
                     {/* Description */}
-                    <Text style={styles.eventDescription}>
+                    <Text style={{marginBottom: 8}} className="font-home-semibold">
                       {event.description}
                     </Text>
 
                     {/* Meta Info */}
                     <View style={styles.eventMeta}>
-                      <Text style={styles.metaText}>📅 {event.date}</Text>
-                      <Text style={styles.metaText}>⏰ {event.time}</Text>
+                      <Text className="font-home-regular">   {event.date}</Text>
+                      <Text className="font-home-regular"> {event.time}</Text>
                     </View>
 
                     {/* Organizer */}
@@ -162,12 +163,12 @@ const styles = StyleSheet.create({
   //   marginBottom: 10,
   // },
 
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 4,
-  },
+  // title: {
+  //   fontSize: 20,
+  //   fontWeight: "700",
+  //   color: "#111827",
+  //   marginBottom: 4,
+  // },
 
   type: {
     fontSize: 13,
@@ -194,10 +195,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  primaryText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
+  // primaryText: {
+  //   color: "#FFFFFF",
+  //   fontWeight: "600",
+  // },
 
   secondaryBtn: {
     flex: 1,
@@ -207,10 +208,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  secondaryText: {
-    color: "#111827",
-    fontWeight: "600",
-  },
+  // secondaryText: {
+  //   color: "#111827",
+  //   fontWeight: "600",
+  // },
   eventCard: {
     backgroundColor: "#F9FAFB",
     padding: 14,
@@ -259,12 +260,6 @@ const styles = StyleSheet.create({
 
   statusEnded: {
     backgroundColor: "#6B7280", // gray
-  },
-
-  eventDescription: {
-    fontSize: 13,
-    color: "#374151",
-    marginBottom: 8,
   },
 
   eventMeta: {
