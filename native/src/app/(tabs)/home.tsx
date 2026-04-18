@@ -38,6 +38,7 @@ const Home = () => {
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
   const sheetRef = useRef<BottomSheet | null>(null);
+  const mapRef = useRef<MapView | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<any | null>(null)
 
   const [region, setRegion] = useState<Region | null>(null);
@@ -121,8 +122,17 @@ const Home = () => {
   const handleOpenSheet = (location: any) => {
     // snapPoints are ["25%", "50%"], so 1 is the 50% mark, 0 is 25%
     setSelectedLocation(location);
+
+    //Animate to region when clicked
+    mapRef.current?.animateToRegion({
+    latitude: location.coordinate.latitude,
+    longitude: location.coordinate.longitude,
+    latitudeDelta: 0.002,
+    longitudeDelta: 0.002,
+  });
     sheetRef.current?.snapToIndex(1);
   }
+
 
   return (
     <>
@@ -135,6 +145,7 @@ const Home = () => {
         <View style={styles.container}>
         {/* MAP */}
         <MapView
+          ref={mapRef}
           style={styles.map}
           showsUserLocation
           showsMyLocationButton
@@ -155,7 +166,7 @@ const Home = () => {
                 longitude: item.coordinate.longitude,
               }}
               title={item.name}
-            onPress={() => handleOpenSheet(item)}
+              onPress={() => handleOpenSheet(item)}
               description={item.type || "Location"}
             >
               <View style={styles.mapName}>
