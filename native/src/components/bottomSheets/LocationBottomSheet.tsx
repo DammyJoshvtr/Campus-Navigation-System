@@ -5,7 +5,13 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
@@ -60,14 +66,15 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
           {/* Handle bar */}
           {/* <View style={styles.handleBar} /> */}
           <ScrollView>
-
             {/* Location Name */}
             <Text className="font-home-semibold">
               {location?.name || "Select a location"}
             </Text>
 
             {/* Type */}
-            <Text style={styles.type} className="font-home-medium">{location?.type || "No category"}</Text>
+            <Text style={styles.type} className="font-home-medium">
+              {location?.type || "No category"}
+            </Text>
 
             {/* Description */}
             <Text style={styles.description} className="font-home-medium">
@@ -78,7 +85,9 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
             {/* Action Buttons */}
             <View style={styles.actions}>
               <TouchableOpacity style={styles.primaryBtn}>
-                <Text className="font-home-bold text-white">Get Directions</Text>
+                <Text className="font-home-bold text-white">
+                  Get Directions
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryBtn}>
@@ -88,7 +97,7 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
             {/* Events Descriptions */}
             <View>
-              <Text style= {{ marginTop: 30 }} className="font-home-bold">
+              <Text style={{ marginTop: 30 }} className="font-home-bold">
                 Events at this location
               </Text>
 
@@ -116,13 +125,16 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                     </View>
 
                     {/* Description */}
-                    <Text style={{marginBottom: 8}} className="font-home-semibold">
+                    <Text
+                      style={{ marginBottom: 8 }}
+                      className="font-home-semibold"
+                    >
                       {event.description}
                     </Text>
 
                     {/* Meta Info */}
                     <View style={styles.eventMeta}>
-                      <Text className="font-home-regular">   {event.date}</Text>
+                      <Text className="font-home-regular"> {event.date}</Text>
                       <Text className="font-home-regular"> {event.time}</Text>
                     </View>
 
@@ -137,7 +149,6 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
               )}
             </View>
           </ScrollView>
-
         </BottomSheetView>
       </BottomSheet>
     );
@@ -149,7 +160,7 @@ export default LocationBottomSheet;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#e9f4fc ",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -157,7 +168,7 @@ const styles = StyleSheet.create({
   // handleBar: {
   //   width: 40,
   //   height: 4,
-  //   backgroundColor: "#D1D5DB",
+  //   backgroundColor: "#dee1e6",
   //   borderRadius: 10,
   //   alignSelf: "center",
   //   marginBottom: 10,
@@ -202,7 +213,7 @@ const styles = StyleSheet.create({
 
   secondaryBtn: {
     flex: 1,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: "#ddd8d8",
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
