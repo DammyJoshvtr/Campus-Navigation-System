@@ -121,7 +121,6 @@ const Home = () => {
   const nameText = "font-home-medium";
 
   const handleOpenSheet = (location: any) => {
-    // snapPoints are ["25%", "50%"], so 1 is the 50% mark, 0 is 25%
     setSelectedLocation(location);
     setShowSearches(false);
     Keyboard.dismiss();
