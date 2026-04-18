@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type Location = {
   id: number;
@@ -13,27 +13,45 @@ type Location = {
 const useLocations = () => {
   const [coords, setCoords] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const fetchLocations = async () => {
+  const apiUrl = "http://192.168.107.171:3000/locations";
+
+  // ✅ MOVE fetch OUTSIDE useEffect
+  const fetchLocations = useCallback(async () => {
+    try {
       setLoading(true);
-      const apiUrl = "http://192.168.107.171:3000/locations";
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        console.log("Location data is Active...");
-        setCoords(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setError(false); // reset error before retry
 
-    fetchLocations();
+      const response = await fetch(apiUrl);
+
+      if (!response.ok) {
+        throw new Error("Network response failed");
+      }
+
+      const data = await response.json();
+
+      console.log("Location data is Active...");
+      setCoords(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { coords, loading };
+  // ✅ Initial load
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
+
+  return {
+    coords,
+    loading,
+    error,
+    refetch: fetchLocations, // 🔥 THIS FIXES EVERYTHING
+  };
 };
 
 export default useLocations;
