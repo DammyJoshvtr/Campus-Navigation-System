@@ -17,7 +17,6 @@ const useLocations = () => {
 
   const apiUrl = "http://192.168.107.171:3000/locations";
 
-  // ✅ MOVE fetch OUTSIDE useEffect
   const fetchLocations = useCallback(async () => {
     try {
       setLoading(true);
@@ -41,7 +40,6 @@ const useLocations = () => {
     }
   }, []);
 
-  // ✅ Initial load
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
@@ -50,7 +48,7 @@ const useLocations = () => {
     coords,
     loading,
     error,
-    refetch: fetchLocations, // 🔥 THIS FIXES EVERYTHING
+    refetch: fetchLocations,
   };
 };
 
