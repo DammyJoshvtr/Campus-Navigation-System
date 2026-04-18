@@ -30,3 +30,11 @@
 // focus, measure position, animate
 // ==========================================================
 
+
+//🧠 What you actually need
+
+// For proper navigation, you need:
+
+// 📍 User location (start)
+// 📍 Selected location (destination)
+// 🧭 Route between them

@@ -15,7 +15,7 @@ const useLocations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const apiUrl = "http://192.168.107.171:3000/locations";
+  const apiUrl = "http://192.168.124.171:3000/locations";
 
   const fetchLocations = useCallback(async () => {
     try {
