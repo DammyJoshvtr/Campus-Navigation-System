@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -38,8 +39,8 @@ const Home = () => {
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
   const sheetRef = useRef<BottomSheet | null>(null);
-  const mapRef = useRef<MapView | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState<any | null>(null)
+  const mapRef = useRef<MapView | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
 
   const [region, setRegion] = useState<Region | null>(null);
 
@@ -96,7 +97,7 @@ const Home = () => {
       ? coords.filter((item: any) =>
           item.name.toLowerCase().includes(searchText.toLowerCase()),
         )
-      : [];
+      : coords;
 
   //  Show all when not searching
   const displayedLocations =
@@ -122,17 +123,18 @@ const Home = () => {
   const handleOpenSheet = (location: any) => {
     // snapPoints are ["25%", "50%"], so 1 is the 50% mark, 0 is 25%
     setSelectedLocation(location);
+    setShowSearches(false);
+    Keyboard.dismiss();
 
     //Animate to region when clicked
     mapRef.current?.animateToRegion({
-    latitude: location.coordinate.latitude,
-    longitude: location.coordinate.longitude,
-    latitudeDelta: 0.002,
-    longitudeDelta: 0.002,
-  });
+      latitude: location.coordinate.latitude,
+      longitude: location.coordinate.longitude,
+      latitudeDelta: 0.002,
+      longitudeDelta: 0.002,
+    });
     sheetRef.current?.snapToIndex(1);
-  }
-
+  };
 
   return (
     <>
@@ -143,106 +145,112 @@ const Home = () => {
         }}
       >
         <View style={styles.container}>
-        {/* MAP */}
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          showsUserLocation
-          showsMyLocationButton
-          customMapStyle={mapStyle}
-          initialRegion={{
-            latitude: 7.6786,
-            longitude: 4.4532,
-            latitudeDelta: 0.001,
-            longitudeDelta: 0.001,
-          }}
-          onRegionChangeComplete={(reg) => setRegion(reg)}
-        >
-          {displayedLocations.map((item: any) => (
-            <Marker
-              key={item.id}
-              coordinate={{
-                latitude: item.coordinate.latitude,
-                longitude: item.coordinate.longitude,
-              }}
-              title={item.name}
-              onPress={() => handleOpenSheet(item)}
-              description={item.type || "Location"}
-            >
-              <View style={styles.mapName}>
-                {React.createElement(getIcon(item.type), {
-                  size: 20,
-                  color: getColor(item.type),
-                })}
-
-                <Text className={nameText}>{item.name}</Text>
-              </View>
-            </Marker>
-          ))}
-        </MapView>
-
-        {/* SEARCH SECTION */}
-        <View style={styles.searchContainer}>
-          <Searchbar
-            barText="Search"
-            onFocus={() => setShowSearches(true)}
-            onChangeText={(text: string) => setSearchText(text)}
-          />
-
-          <ScrollItems />
-
-          <ScrollView
-            // By conditionally applying height and elevation, we can hide the component
-            // without unmounting it. This is a common strategy to prevent a race condition
-            // on the native UI thread that can cause the 'Unable to find viewState' error,
-            // especially when using the new architecture (Fabric).
-            style={[
-              styles.dropdown,
-              !showSearches && { height: 0, elevation: 0 },
-            ]}
-            contentContainerStyle={styles.dropdownContent}
-            keyboardShouldPersistTaps="handled"
+          {/* MAP */}
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            showsUserLocation
+            showsMyLocationButton
+            customMapStyle={mapStyle}
+            initialRegion={{
+              latitude: 7.6786,
+              longitude: 4.4532,
+              latitudeDelta: 0.001,
+              longitudeDelta: 0.001,
+            }}
+            onRegionChangeComplete={(reg) => setRegion(reg)}
           >
-            {filteredLocations.length > 0 ? (
-              filteredLocations.map((item: any) => {
-                const style = typeStyles[item.type] || {
-                  bg: "#E5E7EB",
-                  text: "#374151",
-                };
+            {displayedLocations.map((item: any) => (
+              <Marker
+                key={item.id}
+                coordinate={{
+                  latitude: item.coordinate.latitude,
+                  longitude: item.coordinate.longitude,
+                }}
+                title={item.name}
+                onPress={() => handleOpenSheet(item)}
+                description={item.type || "Location"}
+              >
+                <View style={styles.mapName}>
+                  {React.createElement(getIcon(item.type), {
+                    size: 20,
+                    color: getColor(item.type),
+                  })}
 
-                return (
-                  <View key={item.id} style={styles.resultCard}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.title}>{item.name}</Text>
+                  <Text className={nameText}>{item.name}</Text>
+                </View>
+              </Marker>
+            ))}
+          </MapView>
 
-                      <View
-                        style={[
-                          styles.typeBadge,
-                          { backgroundColor: style.bg },
-                        ]}
-                      >
-                        <Text style={[styles.typeText, { color: style.text }]}>
-                          {item.type || "Unknown"}
-                        </Text>
+          {/* SEARCH SECTION */}
+          <View style={styles.searchContainer}>
+            <Searchbar
+              barText="Search"
+              onFocus={() => setShowSearches(true)}
+              onChangeText={(text: string) => setSearchText(text)}
+            />
+
+            <ScrollItems />
+
+            <ScrollView
+              // By conditionally applying height and elevation, we can hide the component
+              // without unmounting it. This is a common strategy to prevent a race condition
+              // on the native UI thread that can cause the 'Unable to find viewState' error,
+              // especially when using the new architecture (Fabric).
+              style={[
+                styles.dropdown,
+                !showSearches && { height: 0, elevation: 0 },
+              ]}
+              contentContainerStyle={styles.dropdownContent}
+              keyboardShouldPersistTaps="handled"
+            >
+              {filteredLocations.length > 0 ? (
+                filteredLocations.map((item: any) => {
+                  const style = typeStyles[item.type] || {
+                    bg: "#E5E7EB",
+                    text: "#374151",
+                  };
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.resultCard}
+                      onPress={() => handleOpenSheet(item)}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.title}>{item.name}</Text>
+
+                        <View
+                          style={[
+                            styles.typeBadge,
+                            { backgroundColor: style.bg },
+                          ]}
+                        >
+                          <Text
+                            style={[styles.typeText, { color: style.text }]}
+                          >
+                            {item.type || "Unknown"}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
 
-                    <View style={styles.circle} />
-                  </View>
-                );
-              })
-            ) : (
-              <View style={styles.noResult}>
-                <Text style={styles.noResultText}>No results found</Text>
-              </View>
-            )}
-          </ScrollView>
-        </View>
+                      <View style={styles.circle} />
+                    </TouchableOpacity>
+                  );
+                })
+              ) : (
+                <View style={styles.noResult}>
+                  <Text style={styles.noResultText}>No results found</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
 
-        {/* FAB */}
-        <View style={styles.fab}>
-          <FAB onPress={() => router.push("/Directions")} />
-        </View>
+          {/* FAB */}
+          <View style={styles.fab}>
+            <FAB onPress={() => router.push("/Directions")} />
+          </View>
         </View>
       </TouchableWithoutFeedback>
 
