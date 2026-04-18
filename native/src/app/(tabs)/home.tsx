@@ -13,13 +13,14 @@ import {
   View,
   Button,
 } from "react-native";
-import MapView, { Marker, Region } from "react-native-maps";
+import MapView, { Marker, Region, Polyline } from "react-native-maps";
 import FAB from "../../components/Fab";
 import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
 import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
 import BottomSheet from "@gorhom/bottom-sheet";
 import LocationError from "@/components/error/locationError";
+import { useUserLocation } from "@/hooks/useLocation";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -44,7 +45,9 @@ const Home = () => {
   const mapRef = useRef<MapView | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
+  const [routeCoords, setRouteCoords] = useState<any[]>([]);
   const { coords = [], loading, error, refetch } = useLocations(); //  safe default
+  const userLocation = useUserLocation();
 
   React.useEffect(() => {
     if (error) {
@@ -143,6 +146,29 @@ const Home = () => {
     sheetRef.current?.snapToIndex(1);
   };
 
+  const handleGetDirections = (destination: any) => {
+    if (!userLocation) return;
+
+    const route = [
+      {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+      },
+      {
+        latitude: destination.coordinate.latitude,
+        longitude: destination.coordinate.longitude,
+      },
+    ];
+
+    setRouteCoords(route);
+
+    // zoom map to fit both points
+    mapRef.current?.fitToCoordinates(route, {
+      edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
+      animated: true,
+    });
+  };
+
   return (
     <>
       <TouchableWithoutFeedback
@@ -188,6 +214,13 @@ const Home = () => {
                 </View>
               </Marker>
             ))}
+            {routeCoords.length > 0 && (
+              <Polyline
+                coordinates={routeCoords}
+                strokeWidth={4}
+                strokeColor="#2563EB"
+              />
+            )}
           </MapView>
 
           {/* SEARCH SECTION */}
@@ -272,7 +305,11 @@ const Home = () => {
         />
       )}
 
-      <LocationBottomSheet ref={sheetRef} location={selectedLocation} />
+      <LocationBottomSheet
+        ref={sheetRef}
+        location={selectedLocation}
+        onGetDirections={handleGetDirections}
+      />
     </>
   );
 };

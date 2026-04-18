@@ -24,6 +24,7 @@ type Props = {
     type: string;
     description?: string;
   };
+  onGetDirections: (location: any) => void;
 };
 
 // type Props extends EventsProps {
@@ -33,7 +34,7 @@ type Props = {
 // }
 
 const LocationBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ location }, ref) => {
+  ({ location, onGetDirections }, ref) => {
     const [showEvents, setShowEvents] = useState<any | null>(null);
     const snapPoints = useMemo(() => ["25%", "50%"], []);
 
@@ -84,7 +85,7 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
             {/* Action Buttons */}
             <View style={styles.actions}>
-              <TouchableOpacity style={styles.primaryBtn}>
+              <TouchableOpacity style={styles.primaryBtn} onPress={() => onGetDirections?.(location)}>
                 <Text className="font-home-bold text-white">
                   Get Directions
                 </Text>
