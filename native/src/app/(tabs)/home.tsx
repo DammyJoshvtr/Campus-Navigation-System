@@ -49,8 +49,6 @@ const Home = () => {
 
     const zoom = region.latitudeDelta;
 
-    console.log("Zoom:", zoom);
-
     if (zoom > 0.05) {
       return coords.filter(
         (item) => item.type === "Faculty" || item.type === "Library",

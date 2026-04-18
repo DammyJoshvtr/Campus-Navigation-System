@@ -31,10 +31,6 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
     const { coords = [], loading } = useLocations();
 
-    React.useEffect(() => {
-      console.log("Coords from BottomSheet", coords.slice(0, 5));
-    }, [coords]);
-
     return (
       <BottomSheet
         index={-1}
