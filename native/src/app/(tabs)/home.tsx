@@ -21,6 +21,7 @@ import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
 import BottomSheet from "@gorhom/bottom-sheet";
 import LocationError from "@/components/error/locationError";
 import { useUserLocation } from "@/hooks/useLocation";
+import { MapPin } from "lucide-react-native";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -269,20 +270,25 @@ const Home = () => {
                       style={styles.resultCard}
                       onPress={() => handleOpenSheet(item)}
                     >
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.title}>{item.name}</Text>
+                      <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
+                        <View style={styles.iconContainer}>
+                          <MapPin strokeWidth={2} size={20} color="#8f8b8b" />
+                        </View>
+                        <View>
+                          <Text style={styles.title}>{item.name}</Text>
 
-                        <View
-                          style={[
-                            styles.typeBadge,
-                            { backgroundColor: style.bg },
-                          ]}
-                        >
-                          <Text
-                            style={[styles.typeText, { color: style.text }]}
+                          <View
+                            style={[
+                              styles.typeBadge,
+                              { backgroundColor: style.bg },
+                            ]}
                           >
-                            {item.type || "Unknown"}
-                          </Text>
+                            <Text
+                              style={[styles.typeText, { color: style.text }]}
+                            >
+                              {item.type || "Unknown"}
+                            </Text>
+                          </View>
                         </View>
                       </View>
 
@@ -384,6 +390,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "#ebebeb",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   typeText: {
