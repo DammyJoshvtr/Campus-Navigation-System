@@ -22,6 +22,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import LocationError from "@/components/error/locationError";
 import { useUserLocation } from "@/hooks/useLocation";
 import { MapPin } from "lucide-react-native";
+import { directionService } from "@/services/directionServices";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -158,27 +159,31 @@ const Home = () => {
     sheetRef.current?.snapToIndex(1);
   };
 
-  const handleGetDirections = (destination: any) => {
+  const handleGetDirections = async (destination: any) => {
     if (!userLocation) return;
 
-    const current = {
-      latitude: userLocation.latitude,
-      longitude: userLocation.longitude,
-    };
+    try {
+      const result = await directionService(
+        {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+        },
+        {
+          latitude: destination.coordinate.latitude,
+          longitude: destination.coordinate.longitude,
+        },
+      );
 
-    const target = {
-      latitude: destination.coordinate.latitude,
-      longitude: destination.coordinate.longitude,
-    };
+      setRouteCoords(result.route);
 
-    const route = [current, target];
-
-    setRouteCoords(route);
-
-    mapRef.current?.fitToCoordinates(route, {
-      edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-      animated: true,
-    });
+      // 🔥 zoom nicely to full route
+      mapRef.current?.fitToCoordinates(result.route, {
+        edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
+        animated: true,
+      });
+    } catch (err) {
+      console.error("Failed to get route", err);
+    }
   };
 
   return (

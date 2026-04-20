@@ -21,7 +21,7 @@
       "package": "com.anonymous.CampusNavigation",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDdz-pF4hrqls8WEndV1c3HbyVElEAa_UA"
+          "apiKey": "process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY"
         }
       }
     },
