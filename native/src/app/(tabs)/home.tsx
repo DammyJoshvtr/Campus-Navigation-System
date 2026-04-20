@@ -203,8 +203,8 @@ const Home = () => {
             showsMyLocationButton
             customMapStyle={mapStyle}
             initialRegion={{
-              latitude: 7.6786,
-              longitude: 4.4532,
+              latitude: 7.680313,
+              longitude: 4.459676,
               latitudeDelta: 0.001,
               longitudeDelta: 0.001,
             }}
