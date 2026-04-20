@@ -28,6 +28,12 @@ export default function Index() {
           <Text className="text-5xl text-white font-bold font-home-bold leading">
             Redemer's University{"\n"}Maps
           </Text>
+          <Text
+            className="font-home-medium text-gray-300 text-xl mt-2"
+            numberOfLines={2}
+          >
+            Your guide to seamless movement around campus
+          </Text>
         </View>
 
         <Link href="/signin" asChild>
