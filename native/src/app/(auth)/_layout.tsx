@@ -77,12 +77,12 @@ const _layout = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
+    <SafeAreaView className="flex-1 bg-primary/80">
       {/* 30% percent of screen */}
       <View className="h-[15%] w-full">{getHeading()}</View>
 
       {/* 70% Of screen */}
-      <View className="h-[75%] rounded-t-[45px] bg-white/70 w-full overflow-hidden absolute bottom-0 p-8">
+      <View className="h-[75%] rounded-t-[45px] bg-gray-100 w-full overflow-hidden absolute bottom-0 p-8">
         <Image
           source={image.blur}
           resizeMode="cover"

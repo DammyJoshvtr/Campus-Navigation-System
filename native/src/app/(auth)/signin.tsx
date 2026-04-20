@@ -9,9 +9,7 @@ import authSignin from "@/services/api";
 import useFetch from "@/hooks/useFetch";
 
 const Signin = () => {
-
   // const {data, loading, error} = useFetch(() => authSignin({name: "John Doe", password: "password123", email: "email@example.com"}), false);
-
 
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("signup"); // State to handle Login and Signin UI
@@ -40,19 +38,16 @@ const Signin = () => {
       <View className="gap-y-8">
         {/* Tabs */}
         <View className="w-full items-center">
-          <View className="flex-row bg-gray-100 rounded-full p-1 w-[85%] h-12 shadow-sm">
+          {/* tab selection */}
+          <View className="flex-row rounded-full p-1 w-[85%] h-12">
             {/* Signup Tab */}
             <Pressable
               onPress={handleSignup}
               className={`flex-1 rounded-full justify-center items-center ${
-                activeTab === "signup" ? "bg-primary" : ""
+                activeTab === "signup" ? "border-b-2 border-primary" : ""
               }`}
             >
-              <Text
-                className={`font-home-semibold text-[15px] ${
-                  activeTab === "signup" ? "text-white" : "text-gray-500"
-                }`}
-              >
+              <Text className="font-home-semibold text-[20px] text-gray-500">
                 Signup
               </Text>
             </Pressable>
@@ -61,14 +56,10 @@ const Signin = () => {
             <Pressable
               onPress={handleSignin}
               className={`flex-1 rounded-full justify-center items-center ${
-                activeTab === "signin" ? "bg-primary" : ""
+                activeTab === "signin" ? "border-b-2 border-primary" : ""
               }`}
             >
-              <Text
-                className={`font-home-semibold text-[15px] ${
-                  activeTab === "signin" ? "text-white" : "text-gray-500"
-                }`}
-              >
+              <Text className="font-home-semibold text-[20px] text-gray-500">
                 Signin
               </Text>
             </Pressable>
@@ -80,7 +71,7 @@ const Signin = () => {
           {/* Show Full Name only on Signup */}
           {activeTab === "signup" && (
             <View>
-              <Text className="mb-2 text-[13px] text-gray-600 font-home-semibold">
+              <Text className="mb-2 text-[15px] text-gray-600 font-home-semibold">
                 Full Name
               </Text>
 
@@ -94,7 +85,7 @@ const Signin = () => {
 
           {/* Email */}
           <View>
-            <Text className="mb-2 text-[13px] text-gray-600 font-home-semibold">
+            <Text className="mb-2 text-[15px] text-gray-600 font-home-semibold">
               Email Address
             </Text>
 
@@ -109,7 +100,7 @@ const Signin = () => {
 
           {/* Password */}
           <View>
-            <Text className="mb-2 text-[13px] text-gray-600 font-home-semibold">
+            <Text className="mb-2 text-[15px] text-gray-600 font-home-semibold">
               Password
             </Text>
 

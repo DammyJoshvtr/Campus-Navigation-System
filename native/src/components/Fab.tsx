@@ -1,14 +1,21 @@
-import { AntDesign } from "@expo/vector-icons";
+import { MapPin, LocateFixed, Locate } from "lucide-react-native";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
 interface Props {
-  onPress: () => void;
+  onPress?: () => void;
 }
 
-const FAB = ({ onPress }: Props) => {
+const FAB = ({ onPress, useIcon }: Props & { useIcon: boolean }) => {
   return (
-    <TouchableOpacity style={styles.fab} onPress={onPress}>
-      <AntDesign name="environment" size={24} color="white" />
+    <TouchableOpacity
+      style={[styles.fab, !useIcon && { backgroundColor: "white" }]}
+      onPress={onPress}
+    >
+      {useIcon ? (
+        <MapPin size={22} color="#fff" />
+      ) : (
+        <LocateFixed size={22} color="#2563EB" />
+      )}
     </TouchableOpacity>
   );
 };
@@ -26,6 +33,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 5 /* Android shadow */,
   },
+  secondFab: {},
 });
 
 export default FAB;
