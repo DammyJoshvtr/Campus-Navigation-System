@@ -1,3 +1,5 @@
+import polyline from "@mapbox/polyline";
+
 type Coord = {
   latitude: number;
   longitude: number;
@@ -8,16 +10,17 @@ const ORS_CONFIG = {
   API_KEY: process.env.EXPO_PUBLIC_ORS_API_KEY,
 };
 
-const handleGetDirections = async (
+export const directionService = async (
   start: Coord,
   end: Coord,
-  profile: string = "foot-walking"
+  profile: string = "foot-walking",
 ) => {
+
   try {
     const response = await fetch(`${ORS_CONFIG.BASE_URL}/${profile}`, {
       method: "POST",
       headers: {
-        Authorization: ORS_CONFIG.API_KEY!, // assert it's not undefined
+        Authorization: ORS_CONFIG.API_KEY!,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -29,30 +32,35 @@ const handleGetDirections = async (
     });
 
     const data = await response.json();
+    console.log("Direction data:", data);
 
     if (!response.ok) {
-      throw new Error(`Error fetching directions: ${response.statusText}`);
+      throw new Error(data.error || "Failed to fetch directions");
     }
 
-    // 🔥 Safety check
-    if (!data.features || data.features.length === 0) {
+    // ✅ ORS uses routes, NOT features
+    if (!data.routes || data.routes.length === 0) {
       throw new Error("No route found");
     }
 
-    const coords = data.features[0].geometry.coordinates;
+    const routeData = data.routes[0];
 
-    const route = coords.map((point: number[]) => ({
-      latitude: point[1],
-      longitude: point[0],
+    // 🔥 decode polyline geometry
+    const decoded = polyline.decode(routeData.geometry);
+
+    const route = decoded.map(([lat, lng]: number[]) => ({
+      latitude: lat,
+      longitude: lng,
     }));
 
-    const summary = data.features[0].properties.summary;
+    const summary = routeData.summary;
 
     return {
       route,
       distance: summary.distance,
       duration: summary.duration,
     };
+
   } catch (err) {
     console.error("Error fetching directions:", err);
     throw err;
