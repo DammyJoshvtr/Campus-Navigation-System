@@ -48,6 +48,7 @@ const Home = () => {
   const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [routeCoords, setRouteCoords] = useState<any[]>([]);
+  const [followUser, setFollowUser] = useState(true);
   const { coords = [], loading, error, refetch } = useLocations(); //  safe default
   const userLocation = useUserLocation();
 
@@ -58,7 +59,7 @@ const Home = () => {
   }, [error]);
 
   React.useEffect(() => {
-    if (userLocation && mapRef.current) {
+    if (userLocation && mapRef.current && followUser) {
       mapRef.current.animateToRegion({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
@@ -66,7 +67,7 @@ const Home = () => {
         longitudeDelta: 0.002,
       });
     }
-  }, [userLocation]);
+  }, [userLocation, followUser]);
 
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -134,6 +135,19 @@ const Home = () => {
     },
   ];
 
+  const goToUserLocation = () => {
+    if (!userLocation) return;
+
+    setFollowUser(true);
+
+    mapRef.current?.animateToRegion({
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+      latitudeDelta: 0.002,
+      longitudeDelta: 0.002,
+    });
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -160,6 +174,7 @@ const Home = () => {
   };
 
   const handleGetDirections = async (destination: any) => {
+    setFollowUser(false);
     if (!userLocation) return;
 
     try {
@@ -207,6 +222,10 @@ const Home = () => {
               longitude: 4.459676,
               latitudeDelta: 0.001,
               longitudeDelta: 0.001,
+            }}
+            onRegionChange={() => {
+              // user is interacting → stop auto-follow
+              setFollowUser(false);
             }}
             onRegionChangeComplete={(reg) => setRegion(reg)}
           >
@@ -310,9 +329,10 @@ const Home = () => {
           </View>
 
           {/* FAB */}
-          <View style={styles.fab}>
-            <FAB onPress={() => router.push("/Directions")} />
-          </View>
+          <TouchableOpacity style={styles.fab}>
+            <FAB onPress={() => router.push("/Directions")} useIcon={true} />
+            <FAB onPress={goToUserLocation} useIcon={false} />
+          </TouchableOpacity>
         </View>
       </TouchableWithoutFeedback>
 
@@ -430,6 +450,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 80,
     right: 24,
+    gap: 16,
   },
 
   mapName: {
@@ -441,5 +462,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+  },
+  myLocationBtn: {
+    position: "absolute",
+    bottom: 200,
+    right: 20,
+    backgroundColor: "#000  ",
+    height: 40,
+    width: 40,
+    borderRadius: 999,
   },
 });
