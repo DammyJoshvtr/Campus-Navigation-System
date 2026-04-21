@@ -7,8 +7,9 @@ const Searchbar = forwardRef<
     barText: string;
     onFocus?: () => void;
     onChangeText: (text: string) => void;
+    value?: string;
   }
->(({ barText, onFocus, onChangeText }, ref) => {
+>(({ barText, onFocus, onChangeText, value }, ref) => {
   return (
     <View className="h-14">
       <TextInput
@@ -18,6 +19,7 @@ const Searchbar = forwardRef<
         className="h-full w-full rounded-full text-black bg-gray-100 px-5 text-[16px] elevation-lg"
         onFocus={onFocus}
         onChangeText={onChangeText}
+        value={value}
       />
     </View>
   );
