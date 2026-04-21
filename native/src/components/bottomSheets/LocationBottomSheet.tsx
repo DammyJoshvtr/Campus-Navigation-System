@@ -11,6 +11,7 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import BottomSheet, {
   BottomSheetView,
@@ -29,6 +30,7 @@ type Props = {
     };
   };
   onGetDirections: (location: any) => void;
+  loading: boolean;
 };
 
 // type Props extends EventsProps {
@@ -38,7 +40,7 @@ type Props = {
 // }
 
 const LocationBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ location, onGetDirections }, ref) => {
+  ({ location, onGetDirections, loading }, ref) => {
     const [showEvents, setShowEvents] = useState<any | null>(null);
     const snapPoints = useMemo(() => ["25%", "50%"], []);
 
@@ -90,12 +92,17 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
             {/* Action Buttons */}
             <View style={styles.actions}>
               <TouchableOpacity
-                style={styles.primaryBtn}
+                style={[styles.primaryBtn, loading && { opacity: 0.6 }]}
                 onPress={() => onGetDirections?.(location)}
+                disabled={loading}
               >
-                <Text className="font-home-bold text-white">
-                  Get Directions
-                </Text>
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="font-home-bold text-white">
+                    Get Directions
+                  </Text>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryBtn}>
