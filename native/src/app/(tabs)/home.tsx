@@ -250,7 +250,7 @@ const Home = () => {
                 </View>
               </Marker>
             ))}
-            {routeCoords.length > 0 && (
+            {routeCoords?.length > 0 && (
               <Polyline
                 coordinates={routeCoords}
                 strokeWidth={4}
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 200,
     right: 20,
-    backgroundColor: "#000  ",
+    backgroundColor: "#000",
     height: 40,
     width: 40,
     borderRadius: 999,
