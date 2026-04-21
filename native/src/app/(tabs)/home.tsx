@@ -53,6 +53,7 @@ const Home = () => {
   const { coords = [], loading, error, refetch } = useLocations(); //  safe default
   const userLocation = useUserLocation();
   const { from, to } = useLocalSearchParams();
+  const [routeLoading, setRouteLoading] = useState(false);
 
   const parsedFrom = React.useMemo(() => {
     try {
@@ -183,31 +184,38 @@ const Home = () => {
     sheetRef.current?.snapToIndex(1);
   };
 
-  const handleRouteBetweenPoints = useCallback(async (start: any, end: any) => {
-    if (!start?.coordinate || !end?.coordinate) return;
+  const handleRouteBetweenPoints = useCallback(
+    async (start: any, end: any) => {
+      if (!start?.coordinate || !end?.coordinate || routeLoading) return;
 
-    try {
-      const result = await directionService(
-        {
-          latitude: start.coordinate.latitude,
-          longitude: start.coordinate.longitude,
-        },
-        {
-          latitude: end.coordinate.latitude,
-          longitude: end.coordinate.longitude,
-        },
-      );
+      setRouteLoading(true);
 
-      setRouteCoords(result.route);
+      try {
+        const result = await directionService(
+          {
+            latitude: start.coordinate.latitude,
+            longitude: start.coordinate.longitude,
+          },
+          {
+            latitude: end.coordinate.latitude,
+            longitude: end.coordinate.longitude,
+          },
+        );
 
-      mapRef.current?.fitToCoordinates(result.route, {
-        edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-        animated: true,
-      });
-    } catch (err) {
-      console.error("Route error:", err);
-    }
-  }, []);
+        setRouteCoords(result.route);
+
+        mapRef.current?.fitToCoordinates(result.route, {
+          edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
+          animated: true,
+        });
+      } catch (err) {
+        console.error("Route error:", err);
+      } finally {
+        setRouteLoading(false);
+      }
+    },
+    [routeLoading],
+  );
 
   React.useEffect(() => {
     if (!parsedFrom || !parsedTo) return;
@@ -216,7 +224,9 @@ const Home = () => {
   }, [parsedFrom, parsedTo, handleRouteBetweenPoints]);
 
   const handleGetDirectionsFromSheet = async (location: any) => {
-    if (!userLocation) return;
+    if (!userLocation || routeLoading) return;
+
+    setRouteLoading(true);
 
     try {
       const result = await directionService(
@@ -238,6 +248,8 @@ const Home = () => {
       });
     } catch (err) {
       console.error("Route error:", err);
+    } finally {
+      setRouteLoading(false);
     }
   };
 
@@ -399,6 +411,7 @@ const Home = () => {
         ref={sheetRef}
         location={selectedLocation}
         onGetDirections={handleGetDirectionsFromSheet}
+        loading={routeLoading}
       />
     </>
   );
