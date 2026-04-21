@@ -1,7 +1,7 @@
 import useLocations from "@/hooks/getLocation";
 import { getColor, getIcon } from "@/services/iconUtitils";
 import { useRouter } from "expo-router";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -23,6 +23,7 @@ import LocationError from "@/components/error/locationError";
 import { useUserLocation } from "@/hooks/useLocation";
 import { MapPin } from "lucide-react-native";
 import { directionService } from "@/services/directionServices";
+import { useLocalSearchParams } from "expo-router";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -51,6 +52,23 @@ const Home = () => {
   const [followUser, setFollowUser] = useState(true);
   const { coords = [], loading, error, refetch } = useLocations(); //  safe default
   const userLocation = useUserLocation();
+  const { from, to } = useLocalSearchParams();
+
+  const parsedFrom = React.useMemo(() => {
+    try {
+      return from ? JSON.parse(from as string) : null;
+    } catch {
+      return null;
+    }
+  }, [from]);
+
+  const parsedTo = React.useMemo(() => {
+    try {
+      return to ? JSON.parse(to as string) : null;
+    } catch {
+      return null;
+    }
+  }, [to]);
 
   React.useEffect(() => {
     if (error) {
@@ -148,14 +166,6 @@ const Home = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
   const nameText = "font-home-medium";
 
   const handleOpenSheet = (location: any) => {
@@ -173,8 +183,39 @@ const Home = () => {
     sheetRef.current?.snapToIndex(1);
   };
 
-  const handleGetDirections = async (destination: any) => {
-    setFollowUser(false);
+  const handleRouteBetweenPoints = useCallback(async (start: any, end: any) => {
+    if (!start?.coordinate || !end?.coordinate) return;
+
+    try {
+      const result = await directionService(
+        {
+          latitude: start.coordinate.latitude,
+          longitude: start.coordinate.longitude,
+        },
+        {
+          latitude: end.coordinate.latitude,
+          longitude: end.coordinate.longitude,
+        },
+      );
+
+      setRouteCoords(result.route);
+
+      mapRef.current?.fitToCoordinates(result.route, {
+        edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
+        animated: true,
+      });
+    } catch (err) {
+      console.error("Route error:", err);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!parsedFrom || !parsedTo) return;
+
+    handleRouteBetweenPoints(parsedFrom, parsedTo);
+  }, [parsedFrom, parsedTo, handleRouteBetweenPoints]);
+
+  const handleGetDirectionsFromSheet = async (location: any) => {
     if (!userLocation) return;
 
     try {
@@ -184,22 +225,29 @@ const Home = () => {
           longitude: userLocation.longitude,
         },
         {
-          latitude: destination.coordinate.latitude,
-          longitude: destination.coordinate.longitude,
+          latitude: location.coordinate.latitude,
+          longitude: location.coordinate.longitude,
         },
       );
 
       setRouteCoords(result.route);
 
-      // 🔥 zoom nicely to full route
       mapRef.current?.fitToCoordinates(result.route, {
         edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
         animated: true,
       });
     } catch (err) {
-      console.error("Failed to get route", err);
+      console.error("Route error:", err);
     }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
     <>
@@ -350,7 +398,7 @@ const Home = () => {
       <LocationBottomSheet
         ref={sheetRef}
         location={selectedLocation}
-        onGetDirections={handleGetDirections}
+        onGetDirections={handleGetDirectionsFromSheet}
       />
     </>
   );
