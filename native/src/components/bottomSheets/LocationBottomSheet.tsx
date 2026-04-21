@@ -23,6 +23,10 @@ type Props = {
     name: string;
     type: string;
     description?: string;
+    coordinate: {
+      latitude: number;
+      longitude: number;
+    };
   };
   onGetDirections: (location: any) => void;
 };
@@ -85,7 +89,10 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
             {/* Action Buttons */}
             <View style={styles.actions}>
-              <TouchableOpacity style={styles.primaryBtn} onPress={() => onGetDirections?.(location)}>
+              <TouchableOpacity
+                style={styles.primaryBtn}
+                onPress={() => onGetDirections?.(location)}
+              >
                 <Text className="font-home-bold text-white">
                   Get Directions
                 </Text>
@@ -161,27 +168,10 @@ export default LocationBottomSheet;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#e9f4fc ",
+    backgroundColor: "#e9f4fc",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-
-  // handleBar: {
-  //   width: 40,
-  //   height: 4,
-  //   backgroundColor: "#dee1e6",
-  //   borderRadius: 10,
-  //   alignSelf: "center",
-  //   marginBottom: 10,
-  // },
-
-  // title: {
-  //   fontSize: 20,
-  //   fontWeight: "700",
-  //   color: "#111827",
-  //   marginBottom: 4,
-  // },
-
   type: {
     fontSize: 13,
     color: "#6B7280",

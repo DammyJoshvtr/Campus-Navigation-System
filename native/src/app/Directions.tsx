@@ -10,30 +10,66 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Directions = () => {
   const inputRef = useRef<TextInput>(null);
   const secondInputRef = useRef<TextInput>(null);
 
-  const [activeInput, setActiveInput] = useState("from"); // track active field
+  const [activeInput, setActiveInput] = useState("from");
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
-  const { coords = [], loading } = useLocations();
+  const [fromLocation, setFromLocation] = useState(null);
+  const [toLocation, setToLocation] = useState(null);
 
-  // determine what user is typing
+  const { coords = [] } = useLocations();
+  const router = useRouter();
+
+  // what user is typing
   const currentText = activeInput === "from" ? fromText : toText;
 
   const filteredLocations = coords.filter((item) =>
     item.name.toLowerCase().includes(currentText.toLowerCase()),
   );
 
+  // 🔥 HANDLE SELECT LOCATION
+  const handleDirection = (item: any) => {
+    if (activeInput === "from") {
+      setFromText(item.name);
+      setFromLocation(item);
+    } else {
+      setToText(item.name);
+      setToLocation(item);
+    }
+
+    setShowSearch(false);
+  };
+
+  // 🔥 HANDLE BUTTON CLICK
+  const handleGetDirections = () => {
+    if (!fromLocation || !toLocation) {
+      console.log("Select both locations");
+      return;
+    }
+
+    console.log(fromLocation, toLocation);
+
+    router.push({
+      pathname: "/home", // must match file route exactly
+      params: {
+        from: JSON.stringify(fromLocation),
+        to: JSON.stringify(toLocation),
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#eff6ff", padding: 16 }}>
       <View style={{ flex: 1, gap: 20 }}>
-        {/* FROM INPUT */}
+        {/* FROM */}
         <Searchbar
           ref={inputRef}
           barText="From"
@@ -45,7 +81,7 @@ const Directions = () => {
           }}
         />
 
-        {/* TO INPUT */}
+        {/* TO */}
         <Searchbar
           ref={secondInputRef}
           barText="To"
@@ -57,7 +93,7 @@ const Directions = () => {
           }}
         />
 
-        {/* SEARCH RESULTS */}
+        {/* DROPDOWN */}
         {showSearch && (
           <ScrollView
             style={[
@@ -71,14 +107,7 @@ const Directions = () => {
                 <Pressable
                   key={index}
                   style={styles.resultItem}
-                  onPress={() => {
-                    if (activeInput === "from") {
-                      setFromText(item.name);
-                    } else {
-                      setToText(item.name);
-                    }
-                    setShowSearch(false);
-                  }}
+                  onPress={() => handleDirection(item)} // ✅ FIXED
                 >
                   <Text style={styles.resultText}>{item.name}</Text>
                 </Pressable>
@@ -89,8 +118,13 @@ const Directions = () => {
           </ScrollView>
         )}
 
-        <View className="justify-center items-center">
-          <GeneralButton title="Get Direction" showIcon={true} />
+        {/* BUTTON */}
+        <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <GeneralButton
+            title="Get Direction"
+            showIcon={true}
+            onPress={handleGetDirections} // ✅ FIXED
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -108,11 +142,11 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 16,
     paddingVertical: 8,
-
     elevation: 8,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
+    zIndex: 1000,
   },
 
   resultItem: {
