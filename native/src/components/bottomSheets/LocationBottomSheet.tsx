@@ -1,23 +1,17 @@
-import React, {
-  useCallback,
-  useMemo,
-  forwardRef,
-  useState,
-  useEffect,
-} from "react";
-import {
-  Text,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import BottomSheet, {
-  BottomSheetView,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet";
 import { events } from "@/services/Events";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import React, { forwardRef, useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   location?: {
@@ -31,6 +25,10 @@ type Props = {
   };
   onGetDirections: (location: any) => void;
   loading: boolean;
+  routeInfo?: {
+    distance: number;
+    duration: number;
+  };
 };
 
 // type Props extends EventsProps {
@@ -40,7 +38,7 @@ type Props = {
 // }
 
 const LocationBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ location, onGetDirections, loading }, ref) => {
+  ({ location, onGetDirections, loading, routeInfo }, ref) => {
     const [showEvents, setShowEvents] = useState<any | null>(null);
     const snapPoints = useMemo(() => ["25%", "50%"], []);
 
@@ -60,6 +58,22 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
       return events.filter((event) => event.locationName === location.name);
     }, [location]);
+
+    const formatDuration = (seconds: number) => {
+      const mins = Math.round(seconds / 60);
+
+      if (mins < 60) return `${mins} min`;
+
+      const hours = Math.floor(mins / 60);
+      const remaining = mins % 60;
+
+      return `${hours}h ${remaining}m`;
+    };
+
+    const formatDistance = (meters: number) => {
+      const km = meters / 1000;
+      return km < 1 ? `${Math.round(meters)} m` : `${km.toFixed(1)} km`;
+    };
 
     return (
       <BottomSheet
@@ -163,6 +177,17 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                 <Text style={styles.noEvents}>No events at this location</Text>
               )}
             </View>
+
+            {routeInfo && (
+              <View style={{ marginTop: 10 }}>
+                <Text style={{ fontWeight: "600" }}>
+                  🕒 {formatDuration(routeInfo.duration)}
+                </Text>
+                <Text style={{ color: "#555" }}>
+                  📍 {formatDistance(routeInfo.distance)}
+                </Text>
+              </View>
+            )}
           </ScrollView>
         </BottomSheetView>
       </BottomSheet>
@@ -175,7 +200,7 @@ export default LocationBottomSheet;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#e9f4fc",
+    backgroundColor: "#ffffff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },

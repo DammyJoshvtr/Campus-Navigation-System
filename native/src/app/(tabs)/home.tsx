@@ -1,7 +1,13 @@
+import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
+import LocationError from "@/components/error/locationError";
 import useLocations from "@/hooks/getLocation";
+import { useUserLocation } from "@/hooks/useLocation";
+import { directionService } from "@/services/directionServices";
 import { getColor, getIcon } from "@/services/iconUtitils";
-import { useRouter } from "expo-router";
-import React, { useState, useRef, useMemo, useCallback } from "react";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { MapPin } from "lucide-react-native";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -11,19 +17,10 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  Button,
 } from "react-native";
-import MapView, { Marker, Region, Polyline } from "react-native-maps";
+import MapView, { Marker, Polyline, Region } from "react-native-maps";
 import FAB from "../../components/Fab";
-import ScrollItems from "../../components/ScrollItems";
 import Searchbar from "../../components/Searchbar";
-import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
-import BottomSheet from "@gorhom/bottom-sheet";
-import LocationError from "@/components/error/locationError";
-import { useUserLocation } from "@/hooks/useLocation";
-import { MapPin } from "lucide-react-native";
-import { directionService } from "@/services/directionServices";
-import { useLocalSearchParams } from "expo-router";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -54,6 +51,10 @@ const Home = () => {
   const userLocation = useUserLocation();
   const { from, to } = useLocalSearchParams();
   const [routeLoading, setRouteLoading] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<{
+    distance: number;
+    duration: number;
+  } | null>(null);
 
   const parsedFrom = React.useMemo(() => {
     try {
@@ -204,6 +205,14 @@ const Home = () => {
 
         setRouteCoords(result.route);
 
+        console.log("Route result:", result); // Debug log
+
+        // SAVE ETA INFO
+        setRouteInfo({
+          distance: result.distance,
+          duration: result.duration,
+        });
+
         mapRef.current?.fitToCoordinates(result.route, {
           edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
           animated: true,
@@ -242,6 +251,12 @@ const Home = () => {
 
       setRouteCoords(result.route);
 
+      // SAVE ETA INFO
+      setRouteInfo({
+        distance: result.distance,
+        duration: result.duration,
+      });
+
       mapRef.current?.fitToCoordinates(result.route, {
         edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
         animated: true,
@@ -251,6 +266,22 @@ const Home = () => {
     } finally {
       setRouteLoading(false);
     }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.round(seconds / 60);
+
+    if (mins < 60) return `${mins} min`;
+
+    const hours = Math.floor(mins / 60);
+    const remaining = mins % 60;
+
+    return `${hours}h ${remaining}m`;
+  };
+
+  const formatDistance = (meters: number) => {
+    const km = meters / 1000;
+    return km < 1 ? `${Math.round(meters)} m` : `${km.toFixed(1)} km`;
   };
 
   if (loading) {
@@ -313,7 +344,7 @@ const Home = () => {
             {routeCoords?.length > 0 && (
               <Polyline
                 coordinates={routeCoords}
-                strokeWidth={4}
+                strokeWidth={10}
                 strokeColor="#2563EB"
               />
             )}
@@ -327,7 +358,7 @@ const Home = () => {
               onChangeText={(text: string) => setSearchText(text)}
             />
 
-            <ScrollItems />
+            {/* <ScrollItems /> */}
 
             <ScrollView
               // By conditionally applying height and elevation, we can hide the component
@@ -388,6 +419,16 @@ const Home = () => {
             </ScrollView>
           </View>
 
+          {routeInfo && (
+            <View style={styles.etaBox}>
+              <Text style={{ fontWeight: "600", color: "#111" }}>
+                🕒 {formatDuration(routeInfo.duration)}
+              </Text>
+              <Text style={{ color: "#555" }}>
+                📍 {formatDistance(routeInfo.distance)}
+              </Text>
+            </View>
+          )}
           {/* FAB */}
           <TouchableOpacity style={styles.fab}>
             <FAB onPress={() => router.push("/Directions")} useIcon={true} />
@@ -532,5 +573,15 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     borderRadius: 999,
+  },
+  etaBox: {
+    position: "absolute",
+    top: 120,
+    alignSelf: "center",
+    backgroundColor: "white",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    elevation: 5,
   },
 });
