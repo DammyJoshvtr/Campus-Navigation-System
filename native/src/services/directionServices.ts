@@ -38,14 +38,14 @@ export const directionService = async (
       throw new Error(data.error || "Failed to fetch directions");
     }
 
-    // ✅ ORS uses routes, NOT features
+    // ORS uses routes, NOT features
     if (!data.routes || data.routes.length === 0) {
       throw new Error("No route found");
     }
 
     const routeData = data.routes[0];
 
-    // 🔥 decode polyline geometry
+    // decode polyline geometry
     const decoded = polyline.decode(routeData.geometry);
 
     const route = decoded.map(([lat, lng]: number[]) => ({
