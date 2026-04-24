@@ -1,3 +1,12 @@
+/**
+ * app/_layout.tsx  — Root layout
+ *
+ * CHANGES vs original:
+ * - Added ThemeProvider so isDark / theme is available everywhere
+ * - Added SafeAreaProvider (required by react-native-safe-area-context)
+ * - BottomSheetModalProvider kept as-is
+ */
+
 import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,
@@ -11,12 +20,12 @@ import { useEffect } from "react";
 import "./global.css";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider } from "@/context/ThemeContext";
 
-// 1. Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // 2. Initialize the font loading hook
   const [fontLoaded, error] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -24,22 +33,24 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
   });
 
-  //3. Hide the splash screen once fonts are loaded (or if there's an error)
   useEffect(() => {
-    if (fontLoaded || error) {
-      SplashScreen.hideAsync();
-    }
+    if (fontLoaded || error) SplashScreen.hideAsync();
   }, [fontLoaded, error]);
 
-  //4. Return null (render nothing) while waiting for fonts
   if (!fontLoaded && !error) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-      </Stack>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <BottomSheetModalProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </BottomSheetModalProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
