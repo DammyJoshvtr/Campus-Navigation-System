@@ -60,7 +60,7 @@ export const palette = {
   },
 } as const;
 
-export type Theme = typeof palette.light;
+export type Theme = typeof palette.light | typeof palette.dark;
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
