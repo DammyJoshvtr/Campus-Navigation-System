@@ -35,7 +35,7 @@ const Directions = () => {
     item.name.toLowerCase().includes(currentText.toLowerCase()),
   );
 
-  // 🔥 HANDLE SELECT LOCATION
+  // HANDLE SELECT LOCATION
   const handleDirection = (item: any) => {
     if (activeInput === "from") {
       setFromText(item.name);
@@ -123,7 +123,7 @@ const Directions = () => {
           <GeneralButton
             title="Get Direction"
             showIcon={true}
-            onPress={handleGetDirections} // ✅ FIXED
+            onPress={handleGetDirections} // FIXED
           />
         </View>
       </View>
