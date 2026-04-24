@@ -12,6 +12,7 @@
 
 import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
 import LocationError from "@/components/error/locationError";
+import { useTheme } from "@/context/ThemeContext";
 import useLocations from "@/hooks/getLocation";
 import { useUserLocation } from "@/hooks/useLocation";
 import {
@@ -20,7 +21,6 @@ import {
   formatDuration,
 } from "@/services/directionServices";
 import { getColor, getIcon } from "@/services/iconUtitils";
-import { useTheme } from "@/context/ThemeContext";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MapPin } from "lucide-react-native";
@@ -36,23 +36,28 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import MapView, { Marker, Polyline, Region } from "react-native-maps";
+import MapView, {
+  Marker,
+  Polyline,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps";
 import FAB from "../../components/Fab";
 import Searchbar from "../../components/Searchbar";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
-  Faculty:         { bg: "#E8F5E9", text: "#43A047" },
-  Library:         { bg: "#F3E5F5", text: "#8E24AA" },
-  Laboratory:      { bg: "#FFF3E0", text: "#FB8C00" },
-  Administrative:  { bg: "#ECEFF1", text: "#546E7A" },
-  "Event Centre":  { bg: "#FCE4EC", text: "#D81B60" },
+  Faculty: { bg: "#E8F5E9", text: "#43A047" },
+  Library: { bg: "#F3E5F5", text: "#8E24AA" },
+  Laboratory: { bg: "#FFF3E0", text: "#FB8C00" },
+  Administrative: { bg: "#ECEFF1", text: "#546E7A" },
+  "Event Centre": { bg: "#FCE4EC", text: "#D81B60" },
   "Food & Dining": { bg: "#FFF8E1", text: "#F57F17" },
-  Health:          { bg: "#E0F7FA", text: "#00838F" },
-  Shopping:        { bg: "#EDE7F6", text: "#5E35B1" },
-  Recreation:      { bg: "#E8F5E9", text: "#2E7D32" },
-  Hostel:          { bg: "#E1F5FE", text: "#0277BD" },
-  School:          { bg: "#F1F8E9", text: "#7CB342" },
+  Health: { bg: "#E0F7FA", text: "#00838F" },
+  Shopping: { bg: "#EDE7F6", text: "#5E35B1" },
+  Recreation: { bg: "#E8F5E9", text: "#2E7D32" },
+  Hostel: { bg: "#E1F5FE", text: "#0277BD" },
+  School: { bg: "#F1F8E9", text: "#7CB342" },
 };
 
 export default function Home() {
@@ -61,16 +66,16 @@ export default function Home() {
 
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const sheetRef  = useRef<BottomSheet | null>(null);
-  const mapRef    = useRef<MapView | null>(null);
+  const sheetRef = useRef<BottomSheet | null>(null);
+  const mapRef = useRef<MapView | null>(null);
 
   const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
-  const [region, setRegion]                     = useState<Region | null>(null);
-  const [routeCoords, setRouteCoords]           = useState<any[]>([]);
-  const [followUser, setFollowUser]             = useState(true);
-  const [routeLoading, setRouteLoading]         = useState(false);
-  const [loadFailed, setLoadFailed]             = useState(false);
-  const [routeInfo, setRouteInfo]               = useState<{
+  const [region, setRegion] = useState<Region | null>(null);
+  const [routeCoords, setRouteCoords] = useState<any[]>([]);
+  const [followUser, setFollowUser] = useState(true);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<{
     distance: number;
     duration: number;
   } | null>(null);
@@ -82,11 +87,19 @@ export default function Home() {
   // ── Parse deep-link params from Directions screen ──────────────────────────
 
   const parsedFrom = React.useMemo(() => {
-    try { return from ? JSON.parse(from as string) : null; } catch { return null; }
+    try {
+      return from ? JSON.parse(from as string) : null;
+    } catch {
+      return null;
+    }
   }, [from]);
 
   const parsedTo = React.useMemo(() => {
-    try { return to ? JSON.parse(to as string) : null; } catch { return null; }
+    try {
+      return to ? JSON.parse(to as string) : null;
+    } catch {
+      return null;
+    }
   }, [to]);
 
   React.useEffect(() => {
@@ -97,8 +110,8 @@ export default function Home() {
   React.useEffect(() => {
     if (userLocation && mapRef.current && followUser) {
       mapRef.current.animateToRegion({
-        latitude:      userLocation.latitude,
-        longitude:     userLocation.longitude,
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
         latitudeDelta: 0.002,
         longitudeDelta: 0.002,
       });
@@ -108,7 +121,10 @@ export default function Home() {
   // ── Route fetcher ───────────────────────────────────────────────────────────
 
   const fetchRoute = useCallback(
-    async (start: { latitude: number; longitude: number }, end: { latitude: number; longitude: number }) => {
+    async (
+      start: { latitude: number; longitude: number },
+      end: { latitude: number; longitude: number },
+    ) => {
       setRouteLoading(true);
       try {
         const result = await directionService(start, end);
@@ -138,15 +154,44 @@ export default function Home() {
   const getVisibleLocations = () => {
     if (!region) return coords;
     const zoom = region.latitudeDelta;
-    if (zoom > 0.05) return coords.filter((i) => i.type === "Faculty" || i.type === "Library");
-    if (zoom > 0.01) return coords.filter((i) => !["Lecture Rooms","Faculty","Shopping","Event Centre","Recreation","Food & Dining","Laboratory","Library"].includes(i.type));
-    if (zoom > 0.005) return coords.filter((i) => !["Laboratory","Administrative","Event Centre","Food & Dining","Recreation","School","Hostel","Lecture Rooms"].includes(i.type));
+    if (zoom > 0.05)
+      return coords.filter((i) => i.type === "Faculty" || i.type === "Library");
+    if (zoom > 0.01)
+      return coords.filter(
+        (i) =>
+          ![
+            "Lecture Rooms",
+            "Faculty",
+            "Shopping",
+            "Event Centre",
+            "Recreation",
+            "Food & Dining",
+            "Laboratory",
+            "Library",
+          ].includes(i.type),
+      );
+    if (zoom > 0.005)
+      return coords.filter(
+        (i) =>
+          ![
+            "Laboratory",
+            "Administrative",
+            "Event Centre",
+            "Food & Dining",
+            "Recreation",
+            "School",
+            "Hostel",
+            "Lecture Rooms",
+          ].includes(i.type),
+      );
     return coords;
   };
 
   const filteredLocations =
     searchText.trim().length > 0
-      ? coords.filter((item: any) => item.name.toLowerCase().includes(searchText.toLowerCase()))
+      ? coords.filter((item: any) =>
+          item.name.toLowerCase().includes(searchText.toLowerCase()),
+        )
       : coords;
 
   const displayedLocations =
@@ -158,8 +203,8 @@ export default function Home() {
     if (!userLocation) return;
     setFollowUser(true);
     mapRef.current?.animateToRegion({
-      latitude:      userLocation.latitude,
-      longitude:     userLocation.longitude,
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
       latitudeDelta: 0.002,
       longitudeDelta: 0.002,
     });
@@ -170,8 +215,8 @@ export default function Home() {
     setShowSearches(false);
     Keyboard.dismiss();
     mapRef.current?.animateToRegion({
-      latitude:      location.coordinate.latitude,
-      longitude:     location.coordinate.longitude,
+      latitude: location.coordinate.latitude,
+      longitude: location.coordinate.longitude,
       latitudeDelta: 0.002,
       longitudeDelta: 0.002,
     });
@@ -183,7 +228,10 @@ export default function Home() {
     sheetRef.current?.close();
     await fetchRoute(
       { latitude: userLocation.latitude, longitude: userLocation.longitude },
-      { latitude: location.coordinate.latitude, longitude: location.coordinate.longitude },
+      {
+        latitude: location.coordinate.latitude,
+        longitude: location.coordinate.longitude,
+      },
     );
   };
 
@@ -198,7 +246,13 @@ export default function Home() {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={{ marginTop: 12, color: theme.textSecondary, fontFamily: "PlusJakartaSans_500Medium" }}>
+        <Text
+          style={{
+            marginTop: 12,
+            color: theme.textSecondary,
+            fontFamily: "PlusJakartaSans_500Medium",
+          }}
+        >
           Loading campus map…
         </Text>
       </View>
@@ -214,25 +268,29 @@ export default function Home() {
       />
 
       <TouchableWithoutFeedback
-        onPress={() => { setShowSearches(false); Keyboard.dismiss(); }}
+        onPress={() => {
+          setShowSearches(false);
+          Keyboard.dismiss();
+        }}
       >
         <View style={styles.container}>
           {/* ── MAP ── */}
           <MapView
             ref={mapRef}
-            style={StyleSheet.absoluteFill}
+            provider={PROVIDER_GOOGLE}
+            style={{ flex: 1 }}
             showsUserLocation
             showsMyLocationButton={false}
             userInterfaceStyle={isDark ? "dark" : "light"}
             initialRegion={{
-              latitude:      7.680313,
-              longitude:     4.459676,
-              latitudeDelta: 0.001,
-              longitudeDelta: 0.001,
+              latitude: 7.680313,
+              longitude: 4.459676,
+              latitudeDelta: 0.09,
+              longitudeDelta: 0.09,
             }}
             onRegionChange={() => setFollowUser(false)}
             onRegionChangeComplete={(reg) => setRegion(reg)}
-            onPress={clearRoute}   // tap map background → clear route
+            onPress={clearRoute} // tap map background → clear route
           >
             {displayedLocations.map((item: any) => (
               <Marker
@@ -291,57 +349,97 @@ export default function Home() {
               contentContainerStyle={styles.dropdownContent}
               keyboardShouldPersistTaps="handled"
             >
-              {filteredLocations.length > 0
-                ? filteredLocations.map((item: any) => {
-                    const s = typeStyles[item.type] || { bg: "#E5E7EB", text: "#374151" };
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={[styles.resultCard, { borderBottomColor: theme.border }]}
-                        onPress={() => handleOpenSheet(item)}
-                      >
-                        <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
-                          <View style={[styles.iconContainer, { backgroundColor: theme.surfaceAlt }]}>
-                            <MapPin strokeWidth={2} size={18} color={theme.textMuted} />
-                          </View>
-                          <View>
-                            <Text style={[styles.resultTitle, { color: theme.text }]}>
-                              {item.name}
+              {filteredLocations.length > 0 ? (
+                filteredLocations.map((item: any) => {
+                  const s = typeStyles[item.type] || {
+                    bg: "#E5E7EB",
+                    text: "#374151",
+                  };
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.resultCard,
+                        { borderBottomColor: theme.border },
+                      ]}
+                      onPress={() => handleOpenSheet(item)}
+                    >
+                      <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
+                        <View
+                          style={[
+                            styles.iconContainer,
+                            { backgroundColor: theme.surfaceAlt },
+                          ]}
+                        >
+                          <MapPin
+                            strokeWidth={2}
+                            size={18}
+                            color={theme.textMuted}
+                          />
+                        </View>
+                        <View>
+                          <Text
+                            style={[styles.resultTitle, { color: theme.text }]}
+                          >
+                            {item.name}
+                          </Text>
+                          <View
+                            style={[
+                              styles.typeBadge,
+                              { backgroundColor: s.bg },
+                            ]}
+                          >
+                            <Text style={[styles.typeText, { color: s.text }]}>
+                              {item.type || "Unknown"}
                             </Text>
-                            <View style={[styles.typeBadge, { backgroundColor: s.bg }]}>
-                              <Text style={[styles.typeText, { color: s.text }]}>
-                                {item.type || "Unknown"}
-                              </Text>
-                            </View>
                           </View>
                         </View>
-                      </TouchableOpacity>
-                    );
-                  })
-                : (
-                  <View style={styles.noResult}>
-                    <Text style={{ color: theme.textMuted, fontFamily: "PlusJakartaSans_500Medium" }}>
-                      No results found
-                    </Text>
-                  </View>
-                )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })
+              ) : (
+                <View style={styles.noResult}>
+                  <Text
+                    style={{
+                      color: theme.textMuted,
+                      fontFamily: "PlusJakartaSans_500Medium",
+                    }}
+                  >
+                    No results found
+                  </Text>
+                </View>
+              )}
             </ScrollView>
           </View>
 
           {/* ── ETA Box ── */}
           {routeInfo && (
-            <View style={[styles.etaBox, { backgroundColor: theme.surface, shadowColor: theme.shadow }]}>
+            <View
+              style={[
+                styles.etaBox,
+                { backgroundColor: theme.surface, shadowColor: theme.shadow },
+              ]}
+            >
               <View style={styles.etaRow}>
                 <Text style={[styles.etaMain, { color: theme.primary }]}>
                   🕒 {formatDuration(routeInfo.duration)}
                 </Text>
-                <View style={[styles.etaDivider, { backgroundColor: theme.border }]} />
+                <View
+                  style={[styles.etaDivider, { backgroundColor: theme.border }]}
+                />
                 <Text style={[styles.etaSub, { color: theme.textSecondary }]}>
                   📍 {formatDistance(routeInfo.distance)}
                 </Text>
               </View>
               <TouchableOpacity onPress={clearRoute} style={styles.clearBtn}>
-                <Text style={{ fontSize: 11, color: theme.textMuted, fontFamily: "PlusJakartaSans_500Medium" }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: theme.textMuted,
+                    fontFamily: "PlusJakartaSans_500Medium",
+                  }}
+                >
                   ✕ Clear
                 </Text>
               </TouchableOpacity>
@@ -367,7 +465,10 @@ export default function Home() {
       {/* Location load error banner */}
       {loadFailed && (
         <LocationError
-          reload={() => { setLoadFailed(false); refetch(); }}
+          reload={() => {
+            setLoadFailed(false);
+            refetch();
+          }}
           close={() => setLoadFailed(false)}
         />
       )}
@@ -386,127 +487,127 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center:    { flex: 1, justifyContent: "center", alignItems: "center" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   searchContainer: {
     position: "absolute",
-    top:   50,
-    left:  20,
+    top: 50,
+    left: 20,
     right: 20,
-    gap:   10,
+    gap: 10,
     zIndex: 10,
   },
 
   dropdown: {
     borderRadius: 16,
-    maxHeight:    260,
-    elevation:    8,
-    shadowColor:  "#000",
+    maxHeight: 260,
+    elevation: 8,
+    shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius:  10,
+    shadowRadius: 10,
   },
   dropdownContent: { paddingVertical: 6 },
 
   resultCard: {
-    flexDirection:    "row",
-    alignItems:       "center",
-    paddingVertical:  12,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
   },
 
   resultTitle: {
-    fontSize:      15,
-    fontFamily:    "PlusJakartaSans_600SemiBold",
-    marginBottom:  4,
+    fontSize: 15,
+    fontFamily: "PlusJakartaSans_600SemiBold",
+    marginBottom: 4,
   },
 
   typeBadge: {
-    alignSelf:        "flex-start",
+    alignSelf: "flex-start",
     paddingHorizontal: 8,
-    paddingVertical:   3,
-    borderRadius:      999,
+    paddingVertical: 3,
+    borderRadius: 999,
   },
 
   typeText: {
-    fontSize:   11,
+    fontSize: 11,
     fontFamily: "PlusJakartaSans_500Medium",
   },
 
   iconContainer: {
-    width:            32,
-    height:           32,
-    borderRadius:     999,
-    alignItems:       "center",
-    justifyContent:   "center",
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   noResult: { padding: 20, alignItems: "center" },
 
   fab: {
     position: "absolute",
-    bottom:   90,
-    right:    20,
-    gap:      14,
+    bottom: 90,
+    right: 20,
+    gap: 14,
   },
 
   markerBubble: {
     backgroundColor: "white",
     paddingHorizontal: 8,
-    paddingVertical:   5,
-    borderRadius:      20,
-    elevation:         4,
-    shadowColor:       "#000",
-    shadowOpacity:     0.15,
-    shadowRadius:      4,
-    flexDirection:     "row",
-    alignItems:        "center",
-    gap:               4,
-    maxWidth:          160,
+    paddingVertical: 5,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    maxWidth: 160,
   },
 
   markerText: {
-    fontSize:   12,
+    fontSize: 12,
     fontFamily: "PlusJakartaSans_600SemiBold",
-    color:      "#1F2937",
+    color: "#1F2937",
     flexShrink: 1,
   },
 
   // ── ETA Box ──
   etaBox: {
-    position:       "absolute",
-    top:            120,
-    alignSelf:      "center",
-    borderRadius:   14,
+    position: "absolute",
+    top: 120,
+    alignSelf: "center",
+    borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    elevation:       6,
-    shadowOpacity:   0.12,
-    shadowRadius:    8,
-    shadowOffset:    { width: 0, height: 3 },
-    flexDirection:   "row",
-    alignItems:      "center",
-    gap:             12,
+    elevation: 6,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
 
   etaRow: {
     flexDirection: "row",
-    alignItems:    "center",
-    gap:           10,
+    alignItems: "center",
+    gap: 10,
   },
 
   etaMain: {
     fontFamily: "PlusJakartaSans_700Bold",
-    fontSize:   15,
+    fontSize: 15,
   },
 
   etaSub: {
     fontFamily: "PlusJakartaSans_500Medium",
-    fontSize:   14,
+    fontSize: 14,
   },
 
   etaDivider: {
-    width:  1,
+    width: 1,
     height: 16,
   },
 
@@ -516,22 +617,22 @@ const styles = StyleSheet.create({
 
   // ── Route loading ──
   routeLoadingBox: {
-    position:        "absolute",
-    bottom:          180,
-    alignSelf:       "center",
+    position: "absolute",
+    bottom: 180,
+    alignSelf: "center",
     backgroundColor: "rgba(255,255,255,0.95)",
-    borderRadius:    20,
+    borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    flexDirection:   "row",
-    alignItems:      "center",
-    gap:             8,
-    elevation:       6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    elevation: 6,
   },
 
   routeLoadingText: {
-    fontSize:   13,
-    color:      "#374151",
+    fontSize: 13,
+    color: "#374151",
     fontFamily: "PlusJakartaSans_500Medium",
   },
 });
