@@ -83,6 +83,10 @@ export default function Home() {
   const { coords = [], loading, error, refetch } = useLocations();
   const userLocation = useUserLocation();
   const { from, to } = useLocalSearchParams();
+  const mapStyle = [
+    // ← new array created on EVERY render
+    { featureType: "poi", stylers: [{ visibility: "off" }] },
+  ];
 
   // ── Parse deep-link params from Directions screen ──────────────────────────
 
@@ -280,7 +284,8 @@ export default function Home() {
             provider={PROVIDER_GOOGLE}
             style={{ flex: 1 }}
             showsUserLocation
-            showsMyLocationButton={false}
+            customMapStyle={mapStyle}
+            showsMyLocationButton={true}
             userInterfaceStyle={isDark ? "dark" : "light"}
             initialRegion={{
               latitude: 7.680313,
@@ -299,6 +304,7 @@ export default function Home() {
                 title={item.name}
                 description={item.type || "Location"}
                 onPress={() => handleOpenSheet(item)}
+                tracksViewChanges={false}
               >
                 <View style={styles.markerBubble}>
                   {React.createElement(getIcon(item.type), {
