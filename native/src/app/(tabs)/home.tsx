@@ -285,7 +285,7 @@ export default function Home() {
             style={{ flex: 1 }}
             showsUserLocation
             customMapStyle={mapStyle}
-            showsMyLocationButton={true}
+            showsMyLocationButton={false}
             userInterfaceStyle={isDark ? "dark" : "light"}
             initialRegion={{
               latitude: 7.680313,
@@ -323,13 +323,13 @@ export default function Home() {
                 {/* Route shadow (wider, lighter) */}
                 <Polyline
                   coordinates={routeCoords}
-                  strokeWidth={8}
+                  strokeWidth={10}
                   strokeColor="rgba(37,99,235,0.2)"
                 />
                 {/* Route main line */}
                 <Polyline
                   coordinates={routeCoords}
-                  strokeWidth={5}
+                  strokeWidth={8}
                   strokeColor={theme.routeColor}
                   lineCap="round"
                   lineJoin="round"
