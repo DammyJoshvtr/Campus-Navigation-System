@@ -2,6 +2,7 @@ import WeekCalendar from "@/components/Calendar";
 import EventsCard from "@/components/EventsCard";
 import FAB from "@/components/fabs/EventFab";
 import { events } from "@/services/Events";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -15,6 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const Events = () => {
   const [date, setDate] = useState(new Date());
+  const router = useRouter();
+  
   return (
     <SafeAreaView className="flex-1 px-4 gap-y-4 bg-blue-50">
       <StatusBar backgroundColor={"black"} />
@@ -50,8 +53,9 @@ const Events = () => {
 
       <TouchableOpacity
         hitSlop={10}
-        onPress={() => {}}
-        style={{ position: "absolute", bottom: 80, right: 30, gap: 5 }}>
+        onPress={() => router.push("/CreateEvent")}
+        style={{ position: "absolute", bottom: 80, right: 30, gap: 5 }}
+      >
         <FAB />
         <Text className="text-home-regular text-gray-700">Create Event</Text>
       </TouchableOpacity>
