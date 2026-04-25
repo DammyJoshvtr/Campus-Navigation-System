@@ -9,7 +9,7 @@ const _layout = () => {
   const signin = () => {
     return (
       <View className="p-4 gap-4">
-        <View className="flex-row gap-x-1 items-center">
+        {/* <View className="flex-row gap-x-1 items-center">
           <Image
             source={icon.logo}
             resizeMode="contain"
@@ -19,7 +19,7 @@ const _layout = () => {
           <Text className="font-home-bold text-white text-[20px]">
             RUN MAPS
           </Text>
-        </View>
+        </View> */}
         <Text className="font-home-bold text-[40px] text-white">
           Create your{"\n"}New Account
         </Text>
