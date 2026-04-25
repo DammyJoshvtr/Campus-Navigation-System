@@ -1,8 +1,16 @@
 import WeekCalendar from "@/components/Calendar";
 import EventsCard from "@/components/EventsCard";
+import FAB from "@/components/fabs/EventFab";
 import { events } from "@/services/Events";
 import React, { useState } from "react";
-import { FlatList, StatusBar, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Events = () => {
@@ -39,6 +47,14 @@ const Events = () => {
           keyExtractor={(item) => item.id.toString()}
         />
       </View>
+
+      <TouchableOpacity
+        hitSlop={10}
+        onPress={() => {}}
+        style={{ position: "absolute", bottom: 80, right: 30, gap: 5 }}>
+        <FAB />
+        <Text className="text-home-regular text-gray-700">Create Event</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
