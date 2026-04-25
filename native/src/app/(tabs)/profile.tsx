@@ -280,12 +280,7 @@ export default function Profile() {
               </Text>
 
               {/* Level badge */}
-              <View
-                style={[
-                  styles.levelBadge,
-                  { backgroundColor: theme.primary + "18" },
-                ]}
-              >
+              <View style={styles.levelBadge}>
                 <GraduationCap size={12} color={theme.primary} />
                 <Text style={[styles.levelText, { color: theme.primary }]}>
                   {profile.level}
@@ -295,12 +290,7 @@ export default function Profile() {
           </Animated.View>
 
           {/* ── Stats row ─────────────────────────────────────────────── */}
-          <View
-            style={[
-              styles.statsRow,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
+          <View style={styles.statsRow}>
             {[
               { label: "Routes", value: "12" },
               { label: "Saved", value: "5" },
@@ -577,8 +567,6 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-around",
-    borderRadius: 16,
-    borderWidth: 1,
     paddingVertical: 16,
     marginBottom: 16,
   },
