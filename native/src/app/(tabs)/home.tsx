@@ -42,7 +42,7 @@ import MapView, {
   PROVIDER_GOOGLE,
   Region,
 } from "react-native-maps";
-import FAB from "../../components/Fab";
+import FAB from "../../components/fabs/Fab";
 import Searchbar from "../../components/Searchbar";
 
 const typeStyles: any = {
