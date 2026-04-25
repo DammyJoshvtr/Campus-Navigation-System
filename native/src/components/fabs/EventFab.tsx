@@ -1,9 +1,9 @@
 import { Plus } from "lucide-react-native";
-import { TouchableOpacity } from "react-native";
+import { View } from "react-native";
 
 const FAB = () => {
   return (
-    <TouchableOpacity
+    <View
       style={{
         height: 60,
         width: 60,
@@ -15,7 +15,7 @@ const FAB = () => {
       }}
     >
       <Plus size={25} color="white" strokeWidth={2} />
-    </TouchableOpacity>
+    </View>
   );
 };
 

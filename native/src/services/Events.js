@@ -1,6 +1,7 @@
 export const events = [
   {
     id: 1,
+    author: "Damilola",
     title: "Tech Meetup",
     description: "Discuss AI, web development, and startup ideas.",
     locationName: "ICT Lab 1",
@@ -12,6 +13,7 @@ export const events = [
   },
   {
     id: 2,
+    author: "Damilola",
     title: "Campus Worship",
     description: "Evening praise and worship session.",
     locationName: "University Auditorium",
@@ -23,6 +25,7 @@ export const events = [
   },
   {
     id: 3,
+    author: "Damilola",
     title: "Career Fair",
     description: "Meet recruiters and explore job opportunities.",
     locationName: "Postgraduate College",
@@ -34,6 +37,7 @@ export const events = [
   },
   {
     id: 4,
+    author: "Damilola",
     title: "Movie Night",
     description: "Outdoor movie screening with snacks.",
     locationName: "Peace Park",
@@ -45,6 +49,7 @@ export const events = [
   },
   {
     id: 5,
+    author: "Damilola",
     title: "Hackathon",
     description: "24-hour coding challenge with prizes.",
     locationName: "ICT Lab 2",
@@ -56,6 +61,7 @@ export const events = [
   },
   {
     id: 6,
+    author: "Damilola",
     title: "Fitness Bootcamp",
     description: "Morning workout session.",
     locationName: "Gethsemane Garden",
@@ -67,6 +73,7 @@ export const events = [
   },
   {
     id: 7,
+    author: "Damilola",
     title: "Debate Competition",
     description: "Inter-faculty debate showdown.",
     locationName: "Faculty of Social Sciences",
@@ -78,6 +85,7 @@ export const events = [
   },
   {
     id: 8,
+    author: "Damilola",
     title: "Art Exhibition",
     description: "Display of creative student artworks.",
     locationName: "Boja Theatre Art",
@@ -89,6 +97,7 @@ export const events = [
   },
   {
     id: 9,
+    author: "Damilola",
     title: "Food Festival",
     description: "Enjoy local and international dishes.",
     locationName: "Numbers Cafeteria",
@@ -100,6 +109,7 @@ export const events = [
   },
   {
     id: 10,
+    author: "Damilola",
     title: "Health Awareness Talk",
     description: "Learn about mental and physical wellness.",
     locationName: "Health Center",
