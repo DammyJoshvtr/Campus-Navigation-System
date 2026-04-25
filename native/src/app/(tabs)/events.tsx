@@ -1,11 +1,12 @@
-import Calendar from "@/components/Calendar";
+import WeekCalendar from "@/components/Calendar";
 import EventsCard from "@/components/EventsCard";
 import { events } from "@/services/Events";
-import React from "react";
+import React, { useState } from "react";
 import { FlatList, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Events = () => {
+  const [date, setDate] = useState(new Date());
   return (
     <SafeAreaView className="flex-1 px-4 gap-y-4 bg-blue-50">
       <StatusBar backgroundColor={"black"} />
@@ -14,8 +15,9 @@ const Events = () => {
           Upcoming Events
         </Text>
       </View>
-      <Text className="font-home-medium text-[18px]">January</Text>
-      <Calendar />
+      <Text className="font-home-medium text-[18px]">May</Text>
+
+      <WeekCalendar date={date} onChange={(newDate) => setDate(newDate)} />
 
       <View className="py-2">
         <FlatList
