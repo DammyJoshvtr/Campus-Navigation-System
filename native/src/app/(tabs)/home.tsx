@@ -290,8 +290,8 @@ export default function Home() {
             initialRegion={{
               latitude: 7.680313,
               longitude: 4.459676,
-              latitudeDelta: 0.09,
-              longitudeDelta: 0.09,
+              latitudeDelta: 0.001,
+              longitudeDelta: 0.001,
             }}
             onRegionChange={() => setFollowUser(false)}
             onRegionChangeComplete={(reg) => setRegion(reg)}
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
 
   fab: {
     position: "absolute",
-    bottom: 90,
+    bottom: 50,
     right: 20,
     gap: 14,
   },

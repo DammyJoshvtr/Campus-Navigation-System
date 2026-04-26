@@ -1,6 +1,7 @@
 import { ArrowUpRight, MapPin } from "lucide-react-native";
 import React from "react";
 import { Image, Text, View } from "react-native";
+import { useTheme } from "@/context/ThemeContext"
 
 interface Props {
   title: String;
@@ -23,6 +24,7 @@ const EventsCard = ({
   image,
   organizer,
 }: Props) => {
+  const { theme } = useTheme()
   return (
     <View className="w-full flex-row bg-white rounded-xl p-3 mb-3 shadow-md elevation-2">
       {/* Image */}

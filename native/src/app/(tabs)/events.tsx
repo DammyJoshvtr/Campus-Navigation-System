@@ -1,6 +1,7 @@
 import WeekCalendar from "@/components/Calendar";
 import EventsCard from "@/components/EventsCard";
 import FAB from "@/components/fabs/EventFab";
+import { useTheme } from "@/context/ThemeContext";
 import { events } from "@/services/Events";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -17,16 +18,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Events = () => {
   const [date, setDate] = useState(new Date());
   const router = useRouter();
-  
+  const { theme } = useTheme();
+
   return (
-    <SafeAreaView className="flex-1 px-4 gap-y-4 bg-blue-50">
-      <StatusBar backgroundColor={"black"} />
+    <SafeAreaView
+      style={{ backgroundColor: theme.bg }}
+      className="flex-1 px-4 gap-y-4"
+    >
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.bg} />
       <View className="min-h-9">
-        <Text className="text-center font-home-semibold text-[20px] mb-4">
+        <Text style={{color: theme.text}} className="text-center font-home-semibold text-[20px] mb-4">
           Upcoming Events
         </Text>
       </View>
-      <Text className="font-home-medium text-[18px]">May</Text>
+      <Text style={{backgroundColor: theme.textSecondary}} className="font-home-medium text-[18px]">May</Text>
 
       <WeekCalendar date={date} onChange={(newDate) => setDate(newDate)} />
 
@@ -54,7 +59,7 @@ const Events = () => {
       <TouchableOpacity
         hitSlop={10}
         onPress={() => router.push("/CreateEvent")}
-        style={{ position: "absolute", bottom: 80, right: 30, gap: 5 }}
+        style={{ position: "absolute", bottom: 60, right: 30, gap: 5 }}
       >
         <FAB />
         <Text className="text-home-regular text-gray-700">Create Event</Text>
