@@ -1,28 +1,29 @@
 import axios from 'axios'
 
 interface SigninData {
-	name: String;
+	name?: String;
 	password: String;
 	email: String;
 }
 
 const api = {
-  baseUrl: "https://192.168.221.171:5000"
+  baseUrl: "http://192.168.221.171:5000"
 }
 
-const authSignin = ({name, password, email}: SigninData) => {{
+const authSignin = async({email, password}: SigninData) => {
 	try {
-		const url = `${api.baseUrl}/auth/signin`;
-		
-		const res = axios.post(url, {
-			name: name,
-			password: password,
-			email: email,
+		const res = await axios.post(`${api.baseUrl}/auth/signin`, {
+			email,
+			password
 		})
 
-	} catch (err) {
-		console.log(err);
-	}    
-}}
+		console.log(res.data)
+		return res.data
+
+	} catch(err: any) {
+		console.log("Error: ", err.response?.data || err.message)
+		throw err
+	}
+}
 
 export default {authSignin}

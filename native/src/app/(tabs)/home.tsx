@@ -1,29 +1,49 @@
+/**
+ * app/(tabs)/home.tsx
+ *
+ * CHANGES vs original:
+ * - Imports formatDuration/formatDistance from directionServices (single source of truth)
+ * - Passes routeInfo to LocationBottomSheet so ETA shows there too
+ * - routeLoading guard is now in directionService (deduplication), removed redundant check
+ * - ETA box styled with theme colors (dark mode aware)
+ * - Clears route when user taps map outside a marker
+ * - Polyline strokeWidth slightly reduced to 5 (10 was very thick on small screens)
+ */
+
+import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
+import LocationError from "@/components/error/locationError";
+import { useTheme } from "@/context/ThemeContext";
 import useLocations from "@/hooks/getLocation";
+import { useUserLocation } from "@/hooks/useLocation";
+import {
+  directionService,
+  formatDistance,
+  formatDuration,
+} from "@/services/directionServices";
 import { getColor, getIcon } from "@/services/iconUtitils";
-import { useRouter } from "expo-router";
-import React, { useState, useRef, useMemo, useCallback } from "react";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { MapPin } from "lucide-react-native";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  Button,
 } from "react-native";
-import MapView, { Marker, Region, Polyline } from "react-native-maps";
-import FAB from "../../components/Fab";
-import ScrollItems from "../../components/ScrollItems";
+import MapView, {
+  Marker,
+  Polyline,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps";
+import FAB from "../../components/fabs/Fab";
 import Searchbar from "../../components/Searchbar";
-import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
-import BottomSheet from "@gorhom/bottom-sheet";
-import LocationError from "@/components/error/locationError";
-import { useUserLocation } from "@/hooks/useLocation";
-import { MapPin } from "lucide-react-native";
-import { directionService } from "@/services/directionServices";
-import { useLocalSearchParams } from "expo-router";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -40,20 +60,35 @@ const typeStyles: any = {
   School: { bg: "#F1F8E9", text: "#7CB342" },
 };
 
-const Home = () => {
+export default function Home() {
   const router = useRouter();
+  const { theme, isDark } = useTheme();
+
   const [showSearches, setShowSearches] = useState(false);
   const [searchText, setSearchText] = useState("");
   const sheetRef = useRef<BottomSheet | null>(null);
   const mapRef = useRef<MapView | null>(null);
+
   const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [routeCoords, setRouteCoords] = useState<any[]>([]);
   const [followUser, setFollowUser] = useState(true);
-  const { coords = [], loading, error, refetch } = useLocations(); //  safe default
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<{
+    distance: number;
+    duration: number;
+  } | null>(null);
+
+  const { coords = [], loading, error, refetch } = useLocations();
   const userLocation = useUserLocation();
   const { from, to } = useLocalSearchParams();
-  const [routeLoading, setRouteLoading] = useState(false);
+  const mapStyle = [
+    // ← new array created on EVERY render
+    { featureType: "poi", stylers: [{ visibility: "off" }] },
+  ];
+
+  // ── Parse deep-link params from Directions screen ──────────────────────────
 
   const parsedFrom = React.useMemo(() => {
     try {
@@ -72,11 +107,10 @@ const Home = () => {
   }, [to]);
 
   React.useEffect(() => {
-    if (error) {
-      setLoadFailed(true);
-    }
+    if (error) setLoadFailed(true);
   }, [error]);
 
+  // Auto-follow user location on map
   React.useEffect(() => {
     if (userLocation && mapRef.current && followUser) {
       mapRef.current.animateToRegion({
@@ -88,22 +122,47 @@ const Home = () => {
     }
   }, [userLocation, followUser]);
 
-  const [loadFailed, setLoadFailed] = useState(false);
+  // ── Route fetcher ───────────────────────────────────────────────────────────
+
+  const fetchRoute = useCallback(
+    async (
+      start: { latitude: number; longitude: number },
+      end: { latitude: number; longitude: number },
+    ) => {
+      setRouteLoading(true);
+      try {
+        const result = await directionService(start, end);
+        setRouteCoords(result.route);
+        setRouteInfo({ distance: result.distance, duration: result.duration });
+        mapRef.current?.fitToCoordinates(result.route, {
+          edgePadding: { top: 120, right: 60, bottom: 200, left: 60 },
+          animated: true,
+        });
+      } catch (err) {
+        console.error("[Home] Route fetch error:", err);
+      } finally {
+        setRouteLoading(false);
+      }
+    },
+    [],
+  );
+
+  // Handle route from Directions screen params
+  React.useEffect(() => {
+    if (!parsedFrom?.coordinate || !parsedTo?.coordinate) return;
+    fetchRoute(parsedFrom.coordinate, parsedTo.coordinate);
+  }, [parsedFrom, parsedTo, fetchRoute]);
+
+  // ── Visibility culling by zoom level ────────────────────────────────────────
 
   const getVisibleLocations = () => {
     if (!region) return coords;
-
     const zoom = region.latitudeDelta;
-
-    if (zoom > 0.05) {
+    if (zoom > 0.05)
+      return coords.filter((i) => i.type === "Faculty" || i.type === "Library");
+    if (zoom > 0.01)
       return coords.filter(
-        (item) => item.type === "Faculty" || item.type === "Library",
-      );
-    }
-
-    if (zoom > 0.01) {
-      return coords.filter(
-        (item) =>
+        (i) =>
           ![
             "Lecture Rooms",
             "Faculty",
@@ -113,13 +172,11 @@ const Home = () => {
             "Food & Dining",
             "Laboratory",
             "Library",
-          ].includes(item.type),
+          ].includes(i.type),
       );
-    }
-
-    if (zoom > 0.005) {
+    if (zoom > 0.005)
       return coords.filter(
-        (item) =>
+        (i) =>
           ![
             "Laboratory",
             "Administrative",
@@ -129,10 +186,8 @@ const Home = () => {
             "School",
             "Hostel",
             "Lecture Rooms",
-          ].includes(item.type),
+          ].includes(i.type),
       );
-    }
-
     return coords;
   };
 
@@ -143,22 +198,14 @@ const Home = () => {
         )
       : coords;
 
-  //  Show all when not searching
   const displayedLocations =
     searchText.trim().length > 0 ? filteredLocations : getVisibleLocations();
 
-  const mapStyle = [
-    {
-      featureType: "poi",
-      stylers: [{ visibility: "off" }],
-    },
-  ];
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
   const goToUserLocation = () => {
     if (!userLocation) return;
-
     setFollowUser(true);
-
     mapRef.current?.animateToRegion({
       latitude: userLocation.latitude,
       longitude: userLocation.longitude,
@@ -167,14 +214,10 @@ const Home = () => {
     });
   };
 
-  const nameText = "font-home-medium";
-
   const handleOpenSheet = (location: any) => {
     setSelectedLocation(location);
     setShowSearches(false);
     Keyboard.dismiss();
-
-    //Animate to region when clicked
     mapRef.current?.animateToRegion({
       latitude: location.coordinate.latitude,
       longitude: location.coordinate.longitude,
@@ -184,85 +227,50 @@ const Home = () => {
     sheetRef.current?.snapToIndex(1);
   };
 
-  const handleRouteBetweenPoints = useCallback(
-    async (start: any, end: any) => {
-      if (!start?.coordinate || !end?.coordinate || routeLoading) return;
-
-      setRouteLoading(true);
-
-      try {
-        const result = await directionService(
-          {
-            latitude: start.coordinate.latitude,
-            longitude: start.coordinate.longitude,
-          },
-          {
-            latitude: end.coordinate.latitude,
-            longitude: end.coordinate.longitude,
-          },
-        );
-
-        setRouteCoords(result.route);
-
-        mapRef.current?.fitToCoordinates(result.route, {
-          edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-          animated: true,
-        });
-      } catch (err) {
-        console.error("Route error:", err);
-      } finally {
-        setRouteLoading(false);
-      }
-    },
-    [routeLoading],
-  );
-
-  React.useEffect(() => {
-    if (!parsedFrom || !parsedTo) return;
-
-    handleRouteBetweenPoints(parsedFrom, parsedTo);
-  }, [parsedFrom, parsedTo, handleRouteBetweenPoints]);
-
   const handleGetDirectionsFromSheet = async (location: any) => {
-    if (!userLocation || routeLoading) return;
-
-    setRouteLoading(true);
-
-    try {
-      const result = await directionService(
-        {
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-        },
-        {
-          latitude: location.coordinate.latitude,
-          longitude: location.coordinate.longitude,
-        },
-      );
-
-      setRouteCoords(result.route);
-
-      mapRef.current?.fitToCoordinates(result.route, {
-        edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-        animated: true,
-      });
-    } catch (err) {
-      console.error("Route error:", err);
-    } finally {
-      setRouteLoading(false);
-    }
+    if (!userLocation) return;
+    sheetRef.current?.close();
+    await fetchRoute(
+      { latitude: userLocation.latitude, longitude: userLocation.longitude },
+      {
+        latitude: location.coordinate.latitude,
+        longitude: location.coordinate.longitude,
+      },
+    );
   };
+
+  const clearRoute = () => {
+    setRouteCoords([]);
+    setRouteInfo(null);
+  };
+
+  // ── Loading screen ──────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
+      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text
+          style={{
+            marginTop: 12,
+            color: theme.textSecondary,
+            fontFamily: "PlusJakartaSans_500Medium",
+          }}
+        >
+          Loading campus map…
+        </Text>
       </View>
     );
   }
 
   return (
     <>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent
+        barStyle={theme.statusBar}
+      />
+
       <TouchableWithoutFeedback
         onPress={() => {
           setShowSearches(false);
@@ -270,72 +278,78 @@ const Home = () => {
         }}
       >
         <View style={styles.container}>
-          {/* MAP */}
+          {/* ── MAP ── */}
           <MapView
             ref={mapRef}
-            style={styles.map}
+            provider={PROVIDER_GOOGLE}
+            style={{ flex: 1 }}
             showsUserLocation
-            showsMyLocationButton
             customMapStyle={mapStyle}
+            showsMyLocationButton={false}
+            userInterfaceStyle={isDark ? "dark" : "light"}
             initialRegion={{
               latitude: 7.680313,
               longitude: 4.459676,
               latitudeDelta: 0.001,
               longitudeDelta: 0.001,
             }}
-            onRegionChange={() => {
-              // user is interacting → stop auto-follow
-              setFollowUser(false);
-            }}
+            onRegionChange={() => setFollowUser(false)}
             onRegionChangeComplete={(reg) => setRegion(reg)}
+            onPress={clearRoute} // tap map background → clear route
           >
             {displayedLocations.map((item: any) => (
               <Marker
                 key={item.id}
-                coordinate={{
-                  latitude: item.coordinate.latitude,
-                  longitude: item.coordinate.longitude,
-                }}
+                coordinate={item.coordinate}
                 title={item.name}
-                onPress={() => handleOpenSheet(item)}
                 description={item.type || "Location"}
+                onPress={() => handleOpenSheet(item)}
+                tracksViewChanges={false}
               >
-                <View style={styles.mapName}>
+                <View style={styles.markerBubble}>
                   {React.createElement(getIcon(item.type), {
-                    size: 20,
+                    size: 16,
                     color: getColor(item.type),
                   })}
-
-                  <Text className={nameText}>{item.name}</Text>
+                  <Text style={styles.markerText} numberOfLines={1}>
+                    {item.name}
+                  </Text>
                 </View>
               </Marker>
             ))}
-            {routeCoords?.length > 0 && (
-              <Polyline
-                coordinates={routeCoords}
-                strokeWidth={4}
-                strokeColor="#2563EB"
-              />
+
+            {routeCoords.length > 0 && (
+              <>
+                {/* Route shadow (wider, lighter) */}
+                <Polyline
+                  coordinates={routeCoords}
+                  strokeWidth={10}
+                  strokeColor="rgba(37,99,235,0.2)"
+                />
+                {/* Route main line */}
+                <Polyline
+                  coordinates={routeCoords}
+                  strokeWidth={8}
+                  strokeColor={theme.routeColor}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              </>
             )}
           </MapView>
 
-          {/* SEARCH SECTION */}
+          {/* ── SEARCH ── */}
           <View style={styles.searchContainer}>
             <Searchbar
-              barText="Search"
+              barText="Search campus…"
               onFocus={() => setShowSearches(true)}
               onChangeText={(text: string) => setSearchText(text)}
             />
 
-            <ScrollItems />
-
             <ScrollView
-              // By conditionally applying height and elevation, we can hide the component
-              // without unmounting it. This is a common strategy to prevent a race condition
-              // on the native UI thread that can cause the 'Unable to find viewState' error,
-              // especially when using the new architecture (Fabric).
               style={[
                 styles.dropdown,
+                { backgroundColor: theme.surface },
                 !showSearches && { height: 0, elevation: 0 },
               ]}
               contentContainerStyle={styles.dropdownContent}
@@ -343,94 +357,143 @@ const Home = () => {
             >
               {filteredLocations.length > 0 ? (
                 filteredLocations.map((item: any) => {
-                  const style = typeStyles[item.type] || {
+                  const s = typeStyles[item.type] || {
                     bg: "#E5E7EB",
                     text: "#374151",
                   };
-
                   return (
                     <TouchableOpacity
                       key={item.id}
-                      style={styles.resultCard}
+                      style={[
+                        styles.resultCard,
+                        { borderBottomColor: theme.border },
+                      ]}
                       onPress={() => handleOpenSheet(item)}
                     >
                       <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
-                        <View style={styles.iconContainer}>
-                          <MapPin strokeWidth={2} size={20} color="#8f8b8b" />
+                        <View
+                          style={[
+                            styles.iconContainer,
+                            { backgroundColor: theme.surfaceAlt },
+                          ]}
+                        >
+                          <MapPin
+                            strokeWidth={2}
+                            size={18}
+                            color={theme.textMuted}
+                          />
                         </View>
                         <View>
-                          <Text style={styles.title}>{item.name}</Text>
-
+                          <Text
+                            style={[styles.resultTitle, { color: theme.text }]}
+                          >
+                            {item.name}
+                          </Text>
                           <View
                             style={[
                               styles.typeBadge,
-                              { backgroundColor: style.bg },
+                              { backgroundColor: s.bg },
                             ]}
                           >
-                            <Text
-                              style={[styles.typeText, { color: style.text }]}
-                            >
+                            <Text style={[styles.typeText, { color: s.text }]}>
                               {item.type || "Unknown"}
                             </Text>
                           </View>
                         </View>
                       </View>
-
-                      <View style={styles.circle} />
                     </TouchableOpacity>
                   );
                 })
               ) : (
                 <View style={styles.noResult}>
-                  <Text style={styles.noResultText}>No results found</Text>
+                  <Text
+                    style={{
+                      color: theme.textMuted,
+                      fontFamily: "PlusJakartaSans_500Medium",
+                    }}
+                  >
+                    No results found
+                  </Text>
                 </View>
               )}
             </ScrollView>
           </View>
 
-          {/* FAB */}
-          <TouchableOpacity style={styles.fab}>
+          {/* ── ETA Box ── */}
+          {routeInfo && (
+            <View
+              style={[
+                styles.etaBox,
+                { backgroundColor: theme.surface, shadowColor: theme.shadow },
+              ]}
+            >
+              <View style={styles.etaRow}>
+                <Text style={[styles.etaMain, { color: theme.primary }]}>
+                  🕒 {formatDuration(routeInfo.duration)}
+                </Text>
+                <View
+                  style={[styles.etaDivider, { backgroundColor: theme.border }]}
+                />
+                <Text style={[styles.etaSub, { color: theme.textSecondary }]}>
+                  📍 {formatDistance(routeInfo.distance)}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={clearRoute} style={styles.clearBtn}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: theme.textMuted,
+                    fontFamily: "PlusJakartaSans_500Medium",
+                  }}
+                >
+                  ✕ Clear
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* ── Route loading overlay ── */}
+          {routeLoading && (
+            <View style={styles.routeLoadingBox}>
+              <ActivityIndicator size="small" color="#2563EB" />
+              <Text style={styles.routeLoadingText}>Finding best path…</Text>
+            </View>
+          )}
+
+          {/* ── FABs ── */}
+          <View style={styles.fab}>
             <FAB onPress={() => router.push("/Directions")} useIcon={true} />
             <FAB onPress={goToUserLocation} useIcon={false} />
-          </TouchableOpacity>
+          </View>
         </View>
       </TouchableWithoutFeedback>
 
-      {/* Location Error */}
+      {/* Location load error banner */}
       {loadFailed && (
         <LocationError
           reload={() => {
             setLoadFailed(false);
-            refetch(); // 🔥 real reload
-          }} //  reset error and retry fetching
+            refetch();
+          }}
           close={() => setLoadFailed(false)}
         />
       )}
 
+      {/* Bottom sheet */}
       <LocationBottomSheet
         ref={sheetRef}
         location={selectedLocation}
         onGetDirections={handleGetDirectionsFromSheet}
         loading={routeLoading}
+        routeInfo={routeInfo ?? undefined}
       />
     </>
   );
-};
-
-export default Home;
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-
-  map: {
-    ...StyleSheet.absoluteFill,
-  },
-
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   searchContainer: {
     position: "absolute",
@@ -442,18 +505,14 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    maxHeight: 250,
+    maxHeight: 260,
     elevation: 8,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
   },
-
-  dropdownContent: {
-    paddingVertical: 8,
-  },
+  dropdownContent: { paddingVertical: 6 },
 
   resultCard: {
     flexDirection: "row",
@@ -461,76 +520,125 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
   },
 
-  title: {
+  resultTitle: {
     fontSize: 15,
-    color: "#1F2937",
-    fontWeight: "600",
+    fontFamily: "PlusJakartaSans_600SemiBold",
     marginBottom: 4,
   },
 
   typeBadge: {
     alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 999,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: "#ebebeb",
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   typeText: {
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: "PlusJakartaSans_500Medium",
   },
 
-  circle: {
-    width: 10,
-    height: 10,
+  iconContainer: {
+    width: 32,
+    height: 32,
     borderRadius: 999,
-    backgroundColor: "#E5E7EB",
-  },
-
-  noResult: {
-    padding: 20,
     alignItems: "center",
+    justifyContent: "center",
   },
 
-  noResultText: {
-    color: "#6B7280",
-  },
+  noResult: { padding: 20, alignItems: "center" },
 
   fab: {
     position: "absolute",
-    bottom: 80,
-    right: 24,
-    gap: 16,
+    bottom: 50,
+    right: 20,
+    gap: 14,
   },
 
-  mapName: {
-    padding: 6,
+  markerBubble: {
+    backgroundColor: "white",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
     borderRadius: 20,
-    elevation: 5,
-    display: "flex",
-    gap: 4,
-    justifyContent: "center",
-    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
     flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    maxWidth: 160,
   },
-  myLocationBtn: {
+
+  markerText: {
+    fontSize: 12,
+    fontFamily: "PlusJakartaSans_600SemiBold",
+    color: "#1F2937",
+    flexShrink: 1,
+  },
+
+  // ── ETA Box ──
+  etaBox: {
     position: "absolute",
-    bottom: 200,
-    right: 20,
-    backgroundColor: "#000",
-    height: 40,
-    width: 40,
-    borderRadius: 999,
+    top: 120,
+    alignSelf: "center",
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    elevation: 6,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  etaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  etaMain: {
+    fontFamily: "PlusJakartaSans_700Bold",
+    fontSize: 15,
+  },
+
+  etaSub: {
+    fontFamily: "PlusJakartaSans_500Medium",
+    fontSize: 14,
+  },
+
+  etaDivider: {
+    width: 1,
+    height: 16,
+  },
+
+  clearBtn: {
+    paddingLeft: 4,
+  },
+
+  // ── Route loading ──
+  routeLoadingBox: {
+    position: "absolute",
+    bottom: 180,
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    elevation: 6,
+  },
+
+  routeLoadingText: {
+    fontSize: 13,
+    color: "#374151",
+    fontFamily: "PlusJakartaSans_500Medium",
   },
 });

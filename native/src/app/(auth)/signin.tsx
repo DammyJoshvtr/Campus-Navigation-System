@@ -4,28 +4,32 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import authSignin from "@/services/api";
+import api from "@/services/api"
 // import  from "@/hooks/useFetch";
-import useFetch from "@/hooks/useFetch";
 
 const Signin = () => {
-  // const {data, loading, error} = useFetch(() => authSignin({name: "John Doe", password: "password123", email: "email@example.com"}), false);
 
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("signup"); // State to handle Login and Signin UI
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  
 
-  const handleSignup = () => {
+  const handleSignupTab = () => {
     setActiveTab("signup");
   };
 
-  const handleSignin = () => {
+  const handleSigninTab = () => {
     setActiveTab("signin");
   };
 
-  const handleButtonPress = () => {
+  const handleAuth = () => {
     if (activeTab === "signup") {
       router.push("/verifyEmail");
     } else if (activeTab === "signin") {
+
+      
       router.replace("/home");
     } else {
       router.replace("../index");
@@ -42,24 +46,24 @@ const Signin = () => {
           <View className="flex-row rounded-full p-1 w-[85%] h-12">
             {/* Signup Tab */}
             <Pressable
-              onPress={handleSignup}
-              className={`flex-1 rounded-full justify-center items-center ${
+              onPress={handleSignupTab}
+              className={`flex-1 justify-center items-center ${
                 activeTab === "signup" ? "border-b-2 border-primary" : ""
               }`}
             >
-              <Text className="font-home-semibold text-[20px] text-gray-500">
+              <Text className="font-home-semibold text-[18px] text-gray-500">
                 Signup
               </Text>
             </Pressable>
 
             {/* Signin Tab */}
-            <Pressable
-              onPress={handleSignin}
-              className={`flex-1 rounded-full justify-center items-center ${
+            <Pressable  
+              onPress={handleSigninTab}
+              className={`flex-1 justify-center items-center ${
                 activeTab === "signin" ? "border-b-2 border-primary" : ""
               }`}
             >
-              <Text className="font-home-semibold text-[20px] text-gray-500">
+              <Text className="font-home-semibold text-[18px] text-gray-500">
                 Signin
               </Text>
             </Pressable>
@@ -79,6 +83,8 @@ const Signin = () => {
                 className="h-14 rounded-xl bg-white border border-gray-200 px-4 text-[15px] font-home-medium text-gray-800"
                 placeholder="John Doe"
                 placeholderTextColor="#9CA3AF"
+                value={fullName}
+                onChangeText={setFullName}
               />
             </View>
           )}
@@ -95,6 +101,8 @@ const Signin = () => {
               placeholderTextColor="#9CA3AF"
               keyboardType="email-address"
               autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -109,6 +117,8 @@ const Signin = () => {
               placeholder="••••••••"
               placeholderTextColor="#9CA3AF"
               secureTextEntry
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
         </View>
@@ -118,7 +128,7 @@ const Signin = () => {
           <GeneralButton
             title={activeTab === "signup" ? "Create Account" : "Sign In"}
             showIcon={false}
-            onPress={handleButtonPress}
+            onPress={handleAuth}
           />
         </View>
       </View>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Location = {
   id: number;
@@ -15,7 +15,7 @@ const useLocations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const apiUrl = "http://192.168.91.171:3000/locations";
+  const apiUrl = "http://192.168.231.171:3000/locations";
 
   const fetchLocations = useCallback(async () => {
     try {

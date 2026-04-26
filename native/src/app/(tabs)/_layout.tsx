@@ -1,22 +1,44 @@
+import { useTheme } from "@/context/ThemeContext";
 import { Tabs } from "expo-router";
 import { CalendarDays, House, UserRound } from "lucide-react-native";
 import React from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const TabBarIcon = ({ focused, name, icon }: any) => {
+// ─── Tab Icon Component ─────────────────────────────
+
+const TabBarIcon = ({ focused, name, icon, theme }: any) => {
   return (
-    <View className="flex-col items-center justify-center w-44 h-20 mt-6 bg-white">
+    <View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        width: 60,
+        marginTop: 27,
+      }}
+    >
+      {/* Icon background */}
       <View
-        className={`${focused && "bg-[#2563EB]/80 w-20 h-10"} rounded-full items-center justify-center`}
+        style={{
+          backgroundColor: focused ? theme.primary : "transparent",
+          width: 80,
+          height: 40,
+          borderRadius: 20,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         {icon}
       </View>
+
+      {/* Label */}
       <Text
-        className={`text-[14px] font-semibold ml-2 ${
-          focused ? "text-[#2563EB]" : "text-[#6b7280]"
-        }`}
+        style={{
+          fontSize: 13,
+          fontWeight: "600",
+          color: focused ? theme.primary : theme.textMuted,
+          marginTop: 4,
+        }}
       >
         {name}
       </Text>
@@ -24,78 +46,83 @@ const TabBarIcon = ({ focused, name, icon }: any) => {
   );
 };
 
-const _layout = () => {
+// ─── Layout ─────────────────────────────────────────
+
+const Layout = () => {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+
   return (
-    <View className="flex-1">
+    <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <Tabs
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarStyle: {
-            height: 60,
-            // backgroundColor: "#2563EB",
-            backgroundColor: "white",
-            // shadowColor: "#000",
-            // shadowOffset: { width: 0, height: 4 },
-            // shadowOpacity: 0.15,
-            // shadowRadius: 8,
-            // elevation: 8,
-            bottom: insets.bottom,
+          tabBarItemStyle: {
+            justifyContent: "center",
+            alignItems: "center",
           },
-          // tabBarItemStyle: {
-          //   flex: 1,
-          //   justifyContent: "center",
-          //   alignItems: "center",
-          // },
-          animation: "shift",
+          tabBarStyle: {
+            height: 90 + insets.bottom,
+            paddingBottom: insets.bottom,
+            backgroundColor: theme.surface,
+            borderTopColor: theme.border,
+          },
         }}
       >
+        {/* ── HOME ── */}
         <Tabs.Screen
           name="home"
           options={{
-            title: "Home",
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
                 focused={focused}
                 name="Home"
+                theme={theme}
                 icon={
-                  <House size={25} color={`${focused ? "white" : "#6b7280"}`} />
-                }
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="events"
-          options={{
-            title: "events",
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon
-                focused={focused}
-                name="Events"
-                icon={
-                  <CalendarDays
-                    size={25}
-                    color={`${focused ? "white" : "#6b7280"}`}
+                  <House
+                    size={24}
+                    color={focused ? theme.primaryFg : theme.textMuted}
                   />
                 }
               />
             ),
           }}
         />
+
+        {/* ── EVENTS ── */}
+        <Tabs.Screen
+          name="events"
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TabBarIcon
+                focused={focused}
+                name="Events"
+                theme={theme}
+                icon={
+                  <CalendarDays
+                    size={24}
+                    color={focused ? theme.primaryFg : theme.textMuted}
+                  />
+                }
+              />
+            ),
+          }}
+        />
+
+        {/* ── PROFILE ── */}
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
                 focused={focused}
                 name="Profile"
+                theme={theme}
                 icon={
                   <UserRound
-                    size={25}
-                    color={`${focused ? "white" : "#6b7280"}`}
+                    size={24}
+                    color={focused ? theme.primaryFg : theme.textMuted}
                   />
                 }
               />
@@ -107,9 +134,4 @@ const _layout = () => {
   );
 };
 
-export default _layout;
-
-// Expo
-// react-native-maps
-// OpenStreetMap tiles
-// GeoJSON campus data
+export default Layout;

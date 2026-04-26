@@ -1,3 +1,4 @@
+import { useTheme } from "@/context/ThemeContext";
 import { ArrowUpRight, MapPin } from "lucide-react-native";
 import React from "react";
 import { Image, Text, View } from "react-native";
@@ -23,8 +24,12 @@ const EventsCard = ({
   image,
   organizer,
 }: Props) => {
+  const { theme } = useTheme();
   return (
-    <View className="w-full flex-row bg-white rounded-xl p-3 mb-3 shadow-md elevation-2">
+    <View
+      style={{ backgroundColor: theme.card }}
+      className="w-full flex-row rounded-xl p-3 mb-3 shadow-md elevation-2"
+    >
       {/* Image */}
       <View className="w-[30%] h-24 rounded-lg overflow-hidden bg-gray-200 justify-center items-center">
         {image ? (
@@ -38,7 +43,10 @@ const EventsCard = ({
       <View className="w-[70%] pl-3 justify-between">
         {/* Top section */}
         <View className="flex-row justify-between">
-          <Text className="text-base font-home-bold text-gray-900">
+          <Text
+            style={{ color: theme.text }}
+            className="text-base font-home-bold"
+          >
             {title}
           </Text>
 
@@ -50,10 +58,16 @@ const EventsCard = ({
         {/* Middle */}
 
         <View className="mt-1">
-          <Text className="text-xs text-gray-600 font-home-semibold">
+          <Text
+            style={{ color: theme.textSecondary }}
+            className="text-xs font-home-semibold"
+          >
             {description}
           </Text>
-          <Text className="text-xs text-gray-600 font-home-medium">
+          <Text
+            style={{ color: theme.textSecondary }}
+            className="text-xs font-home-medium"
+          >
             {date} • {time}
           </Text>
         </View>
@@ -85,8 +99,11 @@ const EventsCard = ({
 
           {/* Location */}
           <View className="flex-row items-center justify-center gap-x-1">
-            <MapPin color="gray" size={15} />
-            <Text className="text-xs text-gray-500 mt-1 font-home-medium">
+            <MapPin color={theme.textSecondary} size={15} />
+            <Text
+              style={{ color: theme.textSecondary }}
+              className="text-xs mt-1 font-home-medium"
+            >
               {location}
             </Text>
           </View>

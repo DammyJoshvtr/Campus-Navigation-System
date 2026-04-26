@@ -1,5 +1,5 @@
 import { MapPin, LocateFixed, Locate } from "lucide-react-native";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity, Text } from "react-native";
 
 interface Props {
   onPress?: () => void;
