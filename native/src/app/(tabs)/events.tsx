@@ -27,11 +27,19 @@ const Events = () => {
     >
       <StatusBar barStyle={theme.statusBar} backgroundColor={theme.bg} />
       <View className="min-h-9">
-        <Text style={{color: theme.text}} className="text-center font-home-semibold text-[20px] mb-4">
+        <Text
+          style={{ color: theme.text }}
+          className="text-center font-home-semibold text-[20px] mb-4"
+        >
           Upcoming Events
         </Text>
       </View>
-      <Text style={{backgroundColor: theme.textSecondary}} className="font-home-medium text-[18px]">May</Text>
+      <Text
+        style={{ color: theme.textSecondary }}
+        className="font-home-medium text-[18px]"
+      >
+        May
+      </Text>
 
       <WeekCalendar date={date} onChange={(newDate) => setDate(newDate)} />
 
@@ -59,10 +67,12 @@ const Events = () => {
       <TouchableOpacity
         hitSlop={10}
         onPress={() => router.push("/CreateEvent")}
-        style={{ position: "absolute", bottom: 60, right: 30, gap: 5 }}
+        style={{ position: "absolute", bottom: 20, right: 30, gap: 5 }}
       >
         <FAB />
-        <Text className="text-home-regular text-gray-700">Create Event</Text>
+        <Text style={{ color: theme.primary }} className="text-home-regular">
+          Create Event
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
