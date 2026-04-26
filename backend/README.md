@@ -1,392 +1,235 @@
-# 🗺️ Campus Navigation System — Backend API
+# Campus Navigation API
 
-A production-ready Flask REST API for navigating a university campus. Includes JWT authentication, email verification, location management, and a walking-directions engine built on the Haversine formula.
-
----
-
-## Table of Contents
-
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Quick Start](#quick-start)
-- [Environment Variables](#environment-variables)
-- [API Reference](#api-reference)
-- [Directions Algorithm](#directions-algorithm)
-- [Testing](#testing)
-- [Deployment](#deployment)
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Framework | Flask 3.x |
-| ORM | SQLAlchemy + Flask-Migrate |
-| Database | PostgreSQL (MySQL supported) |
-| Auth | JWT (Flask-JWT-Extended) + bcrypt |
-| Email | Flask-Mail |
-| CORS | Flask-Cors |
-| Rate Limiting | Flask-Limiter |
-| Testing | pytest + pytest-flask |
-| Production | Gunicorn |
+Flask REST API for the Campus Navigation System.
 
 ---
 
 ## Project Structure
 
 ```
-backend/
+campus-api/
 ├── app/
-│   ├── __init__.py          # App factory, extension init, error handlers
+│   ├── __init__.py          # App factory + extension init
 │   ├── models/
 │   │   ├── __init__.py
-│   │   ├── user.py          # User model
-│   │   └── location.py      # Location model
+│   │   ├── user.py          # User model (email/password + Google)
+│   │   └── location.py      # Location + SavedLocation models
 │   ├── routes/
 │   │   ├── __init__.py
-│   │   ├── auth.py          # /api/auth/*
-│   │   ├── locations.py     # /api/locations/*
-│   │   └── directions.py    # /api/directions
+│   │   ├── auth.py          # /api/auth/* endpoints
+│   │   └── locations.py     # /api/locations/* endpoints
 │   ├── services/
-│   │   ├── __init__.py
-│   │   ├── auth_service.py        # Registration, login, email verification
-│   │   └── directions_service.py  # Haversine + polyline generation
+│   │   ├── otp_service.py        # OTP generation + email
+│   │   └── google_auth_service.py # Google token verification
 │   └── utils/
-│       ├── __init__.py
-│       ├── validators.py    # Input validation helpers
-│       └── responses.py     # Standardised JSON response helpers
-├── tests/
-│   ├── conftest.py
-│   ├── test_auth.py
-│   ├── test_locations.py
-│   └── test_directions.py
-├── config.py                # Development / Production / Testing configs
+│       ├── responses.py     # Standard JSON envelope
+│       └── validators.py    # Input validation helpers
+├── config.py                # Configuration classes
 ├── run.py                   # Entry point
-├── seed.py                  # Sample campus data seeder
+├── seed.py                  # Seed 36 campus locations
 ├── requirements.txt
-├── .env.example
-└── Campus_Navigation_API.postman_collection.json
+└── .env.example
 ```
 
 ---
 
-## Quick Start
+## Setup
 
-### 1. Clone and create virtual environment
+### 1. Clone and create a virtual environment
 
 ```bash
-git clone <repo-url>
-cd backend
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure environment
+### 2. Configure environment variables
 
 ```bash
 cp .env.example .env
-# Edit .env with your database URL, email credentials, and secrets
+# Edit .env with your values
 ```
 
-### 3. Set up the database
+Key variables:
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET_KEY` | Random secret for signing JWTs |
+| `MAIL_USERNAME` | Gmail address (or SMTP user) |
+| `MAIL_PASSWORD` | Gmail App Password (not your real password) |
+| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
+
+**Gmail App Password:** Go to Google Account → Security → 2-Step Verification → App Passwords.
+
+### 3. Create the database
 
 ```bash
-# Create the database first (PostgreSQL example):
-createdb campus_nav_db
-
-# Run migrations
-flask db init
-flask db migrate -m "Initial migration"
-flask db upgrade
+createdb campus_nav          # PostgreSQL CLI
 ```
 
-### 4. Seed sample campus locations
+### 4. Run migrations
+
+```bash
+flask --app run:app db init       # First time only — creates migrations/ folder
+flask --app run:app db migrate -m "initial"
+flask --app run:app db upgrade
+```
+
+### 5. Seed campus locations
 
 ```bash
 python seed.py
+# → Seed complete: 36 inserted, 0 already existed.
 ```
 
-### 5. Start the development server
+### 6. Start the server
 
 ```bash
 python run.py
-# Server runs at http://localhost:5000
+# → Running on http://0.0.0.0:5000
 ```
-
-### 6. Verify it's working
-
-```bash
-curl http://localhost:5000/health
-# → {"status": "ok", "service": "Campus Navigation API"}
-```
-
----
-
-## Environment Variables
-
-| Variable | Description | Default |
-|---|---|---|
-| `FLASK_ENV` | `development` / `production` | `development` |
-| `SECRET_KEY` | Flask secret key | *(required)* |
-| `DATABASE_URL` | SQLAlchemy database URI | *(required)* |
-| `JWT_SECRET_KEY` | JWT signing secret | *(required)* |
-| `JWT_ACCESS_TOKEN_EXPIRES` | Access token TTL (seconds) | `3600` |
-| `JWT_REFRESH_TOKEN_EXPIRES` | Refresh token TTL (seconds) | `2592000` |
-| `MAIL_SERVER` | SMTP host | `smtp.gmail.com` |
-| `MAIL_PORT` | SMTP port | `587` |
-| `MAIL_USE_TLS` | Enable TLS | `True` |
-| `MAIL_USERNAME` | SMTP username | *(required)* |
-| `MAIL_PASSWORD` | SMTP password / app password | *(required)* |
-| `FRONTEND_URL` | Base URL for email links | `http://localhost:3000` |
 
 ---
 
 ## API Reference
 
-All API responses follow this envelope format:
-
+All responses follow this envelope:
 ```json
-{
-  "success": true | false,
-  "message": "Human-readable message",
-  "data": { ... }
-}
+{ "success": true, "message": "...", "data": {} }
 ```
 
-Errors include an optional `"details"` object with field-level validation messages.
-
----
-
-### Auth Endpoints
+### Authentication
 
 #### `POST /api/auth/signup`
-
-Register a new user.
-
-**Request:**
 ```json
 {
-  "name": "Ada Obi",
-  "email": "ada@university.edu",
-  "password": "Secure123"
+  "fullname": "Ade Okon",
+  "email": "ade.okon@run.edu.ng",
+  "password": "securepass123"
 }
 ```
+- Email must end with `@edu.ng`
+- Sends a 6-digit OTP to the email
+- User cannot log in until OTP is verified
 
-**Response `201`:**
+#### `POST /api/auth/verify-otp`
 ```json
-{
-  "success": true,
-  "message": "Account created. Please check your email to verify your account.",
-  "data": {
-    "id": 1,
-    "name": "Ada Obi",
-    "email": "ada@university.edu",
-    "is_verified": false,
-    "created_at": "2024-07-15T10:00:00+00:00"
-  }
-}
+{ "email": "ade.okon@run.edu.ng", "otp": "483920" }
 ```
+Returns JWT on success.
 
----
+#### `POST /api/auth/resend-otp`
+```json
+{ "email": "ade.okon@run.edu.ng" }
+```
 
 #### `POST /api/auth/login`
-
-Authenticate and receive JWT tokens.
-
-**Request:**
 ```json
-{
-  "email": "ada@university.edu",
-  "password": "Secure123"
+{ "email": "ade.okon@run.edu.ng", "password": "securepass123" }
+```
+Returns JWT on success.
+
+#### `POST /api/auth/google-login`
+```json
+{ "id_token": "<Google ID token from frontend>" }
+```
+- Frontend completes Google OAuth and sends the `id_token`
+- Email must end with `@edu.ng`
+- No OTP step — Google has already verified the email
+
+#### `GET /api/auth/me`
+Headers: `Authorization: Bearer <token>`
+
+---
+
+### Locations
+
+#### `GET /api/locations/`
+Returns all 36 campus locations.
+
+Optional filters:
+- `?type=Faculty` — filter by type
+- `?q=library` — search by name
+
+#### `GET /api/locations/<id>`
+Single location.
+
+#### `POST /api/locations/save` 🔒
+```json
+{ "location_id": 18 }
+```
+
+#### `GET /api/locations/saved` 🔒
+Returns current user's saved locations.
+
+#### `DELETE /api/locations/saved/<saved_id>` 🔒
+`saved_id` is the ID of the saved entry, not the location.
+
+🔒 = Requires `Authorization: Bearer <token>` header.
+
+---
+
+## Frontend Integration
+
+### Connecting to the API (React Native)
+
+```ts
+// services/api.ts
+const BASE_URL = "http://192.168.x.x:5000/api"; // use your machine's LAN IP
+
+export async function apiFetch(path: string, options?: RequestInit, token?: string) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers ?? {}),
+    },
+  });
+  return res.json();
 }
 ```
 
-**Response `200`:**
-```json
-{
-  "success": true,
-  "data": {
-    "access_token": "eyJ...",
-    "refresh_token": "eyJ...",
-    "token_type": "Bearer",
-    "user": { "id": 1, "name": "Ada Obi", "email": "ada@university.edu" }
-  }
-}
+### Replace the static locations fetch
+
+Your `getLocation.ts` currently fetches from `http://192.168.x.x:3000/locations`.
+Change the URL to:
+```
+http://192.168.x.x:5000/api/locations/
+```
+The response shape is identical — each location has `id`, `name`, `coordinate`, and `type`.
+
+---
+
+## Google OAuth — Frontend Setup
+
+Install `expo-auth-session`:
+```bash
+npx expo install expo-auth-session expo-web-browser
 ```
 
----
-
-#### `GET /api/auth/verify/<token>`
-
-Verify email address (link sent by email).
-
-**Response `200`:** Account activated.
-
----
-
-#### `GET /api/auth/me` *(protected)*
-
-Return the authenticated user's profile.
-
----
-
-#### `POST /api/auth/refresh` *(requires refresh token)*
-
-Issue a new access token.
-
----
-
-#### `POST /api/auth/logout` *(protected)*
-
-Revoke the current access token (adds JTI to blacklist).
-
----
-
-### Location Endpoints
-
-All location endpoints require a valid `Authorization: Bearer <token>` header except `GET /types`.
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/locations` | List locations (paginated, filterable by `type`) |
-| `GET` | `/api/locations/search?q=<term>` | Search by name |
-| `GET` | `/api/locations/<id>` | Get single location |
-| `GET` | `/api/locations/types` | List valid location types |
-| `POST` | `/api/locations` | Create a location |
-| `PUT` | `/api/locations/<id>` | Update a location |
-| `DELETE` | `/api/locations/<id>` | Soft-delete a location |
-
-**Create location body:**
-```json
-{
-  "name": "Innovation Hub",
-  "description": "Co-working space for student startups.",
-  "latitude": 6.5263,
-  "longitude": 3.3815,
-  "type": "Faculty",
-  "building_code": "INN-01",
-  "floor": 2
-}
-```
-
-**Valid location types:**
-`Lecture Room`, `Faculty`, `Library`, `Cafeteria`, `Laboratory`, `Administrative`, `Sports Facility`, `Hostel`, `Clinic`, `Parking`, `Chapel`, `Other`
-
----
-
-### Directions Endpoint
-
-#### `POST /api/directions` *(protected)*
-
-Compute a walking route between two coordinates.
-
-**Request:**
-```json
-{
-  "origin":      { "lat": 6.5244, "lng": 3.3792 },
-  "destination": { "lat": 6.5280, "lng": 3.3810 },
-  "points": 20
-}
-```
-
-**Response `200`:**
-```json
-{
-  "success": true,
-  "data": {
-    "distance": "450 m",
-    "distance_meters": 449.87,
-    "duration": "6 mins",
-    "duration_seconds": 321,
-    "route": [
-      { "lat": 6.5244, "lng": 3.3792 },
-      { "lat": 6.5248, "lng": 3.3792 },
-      { "lat": 6.5252, "lng": 3.3792 },
-      { "lat": 6.5256, "lng": 3.3798 },
-      { "lat": 6.5260, "lng": 3.3804 },
-      { "lat": 6.5264, "lng": 3.3807 },
-      { "lat": 6.5268, "lng": 3.3808 },
-      { "lat": 6.5274, "lng": 3.3809 },
-      { "lat": 6.5280, "lng": 3.3810 }
-    ]
-  }
+After the user completes Google sign-in, send the `id_token` to your API:
+```ts
+const { authentication } = await promptAsync();
+if (authentication?.idToken) {
+  const res = await apiFetch("/auth/google-login", {
+    method: "POST",
+    body: JSON.stringify({ id_token: authentication.idToken }),
+  });
 }
 ```
 
 ---
 
-## Directions Algorithm
-
-The directions service is implemented in `app/services/directions_service.py`.
-
-### Haversine Distance
-
-```
-a = sin²(Δlat/2) + cos(lat₁)·cos(lat₂)·sin²(Δlng/2)
-c = 2·arcsin(√a)
-d = R·c          where R = 6,371,000 m
-```
-
-### Polyline Generation
-
-For distances **< 50 m**: linear interpolation along the great circle.
-
-For distances **≥ 50 m**: an **L-shaped path** is generated via an intermediate waypoint at `(origin.lat, destination.lng)`. This simulates realistic campus walking patterns (horizontal corridor → vertical corridor) rather than cutting diagonally across lawns or buildings.
-
-### Walking Speed
-
-Duration is estimated at **1.4 m/s** (standard pedestrian speed). This constant is easily overridden via the `WALKING_SPEED_MS` variable in the service.
-
----
-
-## Testing
+## Production Deployment
 
 ```bash
-# Install test dependencies (included in requirements.txt)
-pip install pytest pytest-flask pytest-mock
-
-# Run all tests
-pytest tests/ -v
-
-# Run with coverage
-pip install pytest-cov
-pytest tests/ --cov=app --cov-report=term-missing
-```
-
----
-
-## Deployment
-
-### Gunicorn (Production)
-
-```bash
-FLASK_ENV=production gunicorn "run:app" \
+gunicorn "run:app" \
   --workers 4 \
-  --bind 0.0.0.0:8000 \
-  --timeout 120 \
+  --bind 0.0.0.0:5000 \
   --access-logfile - \
   --error-logfile -
 ```
 
-### Docker (Optional)
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 8000
-CMD ["gunicorn", "run:app", "--workers", "4", "--bind", "0.0.0.0:8000"]
-```
-
-### Checklist before going live
-
-- [ ] Set strong `SECRET_KEY` and `JWT_SECRET_KEY`
-- [ ] Switch `DATABASE_URL` to production PostgreSQL instance
-- [ ] Configure real SMTP credentials for Flask-Mail
-- [ ] Replace in-memory JWT blacklist with Redis (`RATELIMIT_STORAGE_URL=redis://...`)
-- [ ] Run `flask db upgrade` on the production database
-- [ ] Set `FLASK_ENV=production`
+Set `FLASK_ENV=production` in your environment.
