@@ -16,7 +16,7 @@ login_manage = LoginManager()
 login_manage.init_app(app)
 bcrypt = Bcrypt(app)
 
-#User Loader function
+#User Loader functions
 @login_manage.user_loader
 def load_user(user_id):
     return User.get(user_id)
