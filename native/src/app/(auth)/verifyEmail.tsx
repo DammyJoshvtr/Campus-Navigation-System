@@ -3,7 +3,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
 import React, { useState } from "react";
-import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, TextInput, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GeneralButton from "../../components/GeneralButton";
 
@@ -14,6 +14,7 @@ const VerifyEmail = () => {
   
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleVerify = async () => {
@@ -38,6 +39,20 @@ const VerifyEmail = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setErrorMsg(null);
+    setIsResending(true);
+    try {
+      await api.authResendOtp(email);
+      Alert.alert("Success", "A new OTP has been sent to your email.");
+    } catch (err: any) {
+      console.log("Resend Error Details: ", err.response?.data || err.message);
+      setErrorMsg(err.response?.data?.message || "Failed to resend OTP.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -93,7 +108,7 @@ const VerifyEmail = () => {
               setOtp(text.replace(/[^0-9]/g, ''));
               if (errorMsg) setErrorMsg(null);
             }}
-            editable={!isLoading}
+            editable={!isLoading && !isResending}
           />
         </View>
       </View>
@@ -118,8 +133,12 @@ const VerifyEmail = () => {
             Didn't receive the email?
           </Text>
 
-          <Pressable className="ml-2" disabled={isLoading}>
-            <Text className="text-primary font-home-bold text-[15px]">Resend OTP</Text>
+          <Pressable className="ml-2" disabled={isLoading || isResending} onPress={handleResend}>
+            {isResending ? (
+               <ActivityIndicator color="#2563EB" size="small" />
+            ) : (
+               <Text className="text-primary font-home-bold text-[15px]">Resend OTP</Text>
+            )}
           </Pressable>
         </View>
       </View>

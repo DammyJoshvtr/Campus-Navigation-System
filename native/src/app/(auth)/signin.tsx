@@ -55,8 +55,12 @@ const Signin = () => {
     } catch (err: any) {
       console.log("Auth Error Details: ", err.response?.data || err.message);
       // Show user-friendly error instead of raw backend error
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        setErrorMsg("Invalid credentials or account not verified.");
+      if (err.response?.status === 401) {
+        setErrorMsg("Invalid email or password.");
+      } else if (err.response?.status === 403) {
+        // Account exists but is not verified. Backend automatically sent a new OTP.
+        // Redirect user to the verify screen to complete verification.
+        router.push({ pathname: "/verifyEmail", params: { email } });
       } else if (err.response?.status === 409) {
         setErrorMsg("An account with this email already exists.");
       } else {

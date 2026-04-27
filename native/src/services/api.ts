@@ -51,4 +51,17 @@ const authVerifyOtp = async (email: string, otp: string) => {
   }
 };
 
-export default { authSignup, authSignin, authVerifyOtp };
+const authResendOtp = async (email: string) => {
+  try {
+    const res = await axios.post(`${api.baseUrl}/api/auth/resend-otp`, {
+      email,
+    });
+    console.log(res.data);
+    return res.data;
+  } catch (err: any) {
+    console.log("Resend OTP Error: ", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export default { authSignup, authSignin, authVerifyOtp, authResendOtp };

@@ -59,10 +59,33 @@ def signup():
         return jsonify({"message": "Missing required fields"}), 400
 
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT id FROM users WHERE email = %s', (email,))
-    if cursor.fetchone():
-        cursor.close()
-        return jsonify({"message": "Email already exists"}), 409
+    cursor.execute('SELECT id, is_verified FROM users WHERE email = %s', (email,))
+    existing_user = cursor.fetchone()
+    
+    if existing_user:
+        db_id, is_verified = existing_user
+        if is_verified:
+            cursor.close()
+            return jsonify({"message": "Email already exists"}), 409
+        else:
+            # User exists but is not verified. Resend OTP and update password/name.
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            otp = generate_otp()
+            expires_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
+            
+            try:
+                cursor.execute(
+                    'UPDATE users SET name=%s, password=%s, otp_code=%s, otp_expires_at=%s WHERE id=%s',
+                    (name, hashed_password, otp, expires_at, db_id)
+                )
+                mysql.connection.commit()
+            except Exception as e:
+                cursor.close()
+                return jsonify({"message": f"Database error: {e}"}), 500
+            
+            cursor.close()
+            send_otp_email(email, otp)
+            return jsonify({"message": "User updated. Please check your email for the OTP.", "email": email}), 201
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     otp = generate_otp()
@@ -148,7 +171,14 @@ def login():
         return jsonify({"message": "Invalid credentials"}), 401
 
     if not is_verified:
-        return jsonify({"message": "Email not verified. Please verify your OTP."}), 403
+        otp = generate_otp()
+        expires_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
+        cursor = mysql.connection.cursor()
+        cursor.execute('UPDATE users SET otp_code=%s, otp_expires_at=%s WHERE id=%s', (otp, expires_at, db_id))
+        mysql.connection.commit()
+        cursor.close()
+        send_otp_email(db_email, otp)
+        return jsonify({"message": "Email not verified. A new OTP has been sent. Please verify your OTP."}), 403
 
     # For a real API, return a JWT token. Since the original relied on flask_login, 
     # we'll just return a success message and user object to satisfy the frontend.
@@ -156,6 +186,46 @@ def login():
         "message": "Login successful",
         "user": {"id": db_id, "name": db_name, "email": db_email}
     }), 200
+
+@app.route('/api/auth/resend-otp', methods=['POST'])
+def resend_otp():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT id, is_verified FROM users WHERE email = %s', (email,))
+    user_data = cursor.fetchone()
+
+    if not user_data:
+        cursor.close()
+        return jsonify({"message": "User not found"}), 404
+
+    db_id, is_verified = user_data
+
+    if is_verified:
+        cursor.close()
+        return jsonify({"message": "Email is already verified"}), 400
+
+    otp = generate_otp()
+    expires_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+    try:
+        cursor.execute(
+            'UPDATE users SET otp_code=%s, otp_expires_at=%s WHERE id=%s',
+            (otp, expires_at, db_id)
+        )
+        mysql.connection.commit()
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Database error: {e}"}), 500
+
+    cursor.close()
+    send_otp_email(email, otp)
+
+    return jsonify({"message": "OTP resent successfully."}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
