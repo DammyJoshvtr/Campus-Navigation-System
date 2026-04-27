@@ -45,7 +45,10 @@ const VerifyEmail = () => {
     <SafeAreaView className="flex-1 justify-between">
       {/* Top Section */}
       <View className="items-center mt-12 px-6 gap-y-6">
-        <View className="w-20 h-20 bg-blue-50 border border-blue-100 rounded-full items-center justify-center shadow-sm">
+        <View 
+          className="w-20 h-20 bg-blue-50 border border-blue-100 rounded-full items-center justify-center"
+          style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 }}
+        >
           <AntDesign name="mail" size={36} color="#2563EB" />
         </View>
 
@@ -57,7 +60,10 @@ const VerifyEmail = () => {
           We've sent a 6-digit verification code to your email address. Please enter it below to activate your account.
         </Text>
 
-        <View className="bg-gray-50 border border-gray-200 px-5 py-3 rounded-xl mb-2 shadow-sm">
+        <View 
+          className="bg-gray-50 border border-gray-200 px-5 py-3 rounded-xl mb-2"
+          style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 }}
+        >
           <Text className="font-home-semibold text-gray-700 text-[15px]">
             {email}
           </Text>
@@ -76,8 +82,8 @@ const VerifyEmail = () => {
         {/* OTP Input Field */}
         <View className="w-full">
           <TextInput
-            className={`w-full h-16 bg-white border ${errorMsg ? 'border-red-400' : 'border-gray-300'} rounded-xl px-4 text-center text-gray-800 font-home-bold shadow-sm`}
-            style={{ fontSize: 26, letterSpacing: 14 }}
+            className={`w-full h-16 bg-white border ${errorMsg ? 'border-red-400' : 'border-gray-300'} rounded-xl px-4 text-center text-gray-800 font-home-bold`}
+            style={{ fontSize: 26, letterSpacing: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 }}
             placeholder="••••••"
             placeholderTextColor="#D1D5DB"
             keyboardType="number-pad"
@@ -96,7 +102,10 @@ const VerifyEmail = () => {
       <View className="px-6 mb-8 gap-y-6">
         <View className="items-center w-full">
           {isLoading ? (
-            <View className="w-full h-14 bg-primary rounded-xl items-center justify-center shadow-md">
+            <View 
+              className="w-full h-14 bg-primary rounded-xl items-center justify-center"
+              style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
+            >
               <ActivityIndicator color="white" size="small" />
             </View>
           ) : (

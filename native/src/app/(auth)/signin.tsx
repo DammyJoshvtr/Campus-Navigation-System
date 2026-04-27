@@ -79,8 +79,9 @@ const Signin = () => {
             <Pressable
               onPress={handleSignupTab}
               className={`flex-1 justify-center items-center rounded-full ${
-                activeTab === "signup" ? "bg-white shadow-sm" : ""
+                activeTab === "signup" ? "bg-white" : ""
               }`}
+              style={activeTab === "signup" ? { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 } : {}}
             >
               <Text
                 className={`font-home-semibold text-[16px] ${
@@ -95,8 +96,9 @@ const Signin = () => {
             <Pressable
               onPress={handleSigninTab}
               className={`flex-1 justify-center items-center rounded-full ${
-                activeTab === "signin" ? "bg-white shadow-sm" : ""
+                activeTab === "signin" ? "bg-white" : ""
               }`}
+              style={activeTab === "signin" ? { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 } : {}}
             >
               <Text
                 className={`font-home-semibold text-[16px] ${
@@ -205,7 +207,10 @@ const Signin = () => {
         </View>
 
         {/* Google Button */}
-        <Pressable className="h-14 flex-row items-center justify-center gap-x-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <Pressable 
+          className="h-14 flex-row items-center justify-center gap-x-3 bg-white border border-gray-200 rounded-xl"
+          style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 }}
+        >
           <Image
             source={icon.google}
             resizeMode="contain"
