@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 
 interface SigninData {
 	email: string;
@@ -12,7 +12,7 @@ interface SignupData {
 }
 
 const api = {
-  baseUrl: "http://192.168.221.171:5000"
+	baseUrl: "http://192.168.231.171:5000"
 }
 
 const authSignup = async (data: SignupData) => {
@@ -20,24 +20,24 @@ const authSignup = async (data: SignupData) => {
 		const res = await axios.post(`${api.baseUrl}/api/auth/signup`, data)
 		console.log(res.data)
 		return res.data
-	} catch(err: any) {
+	} catch (err: any) {
 		console.log("Signup Error: ", err.response?.data || err.message)
 		throw err
 	}
 }
 
-const authSignin = async(data: SigninData) => {
+const authSignin = async (data: SigninData) => {
 	try {
 		const res = await axios.post(`${api.baseUrl}/api/auth/login`, data)
 		console.log(res.data)
 		return res.data
-	} catch(err: any) {
+	} catch (err: any) {
 		console.log("Signin Error: ", err.response?.data || err.message)
 		throw err
 	}
 }
 
-const authVerifyOtp = async(email: string, otp: string) => {
+const authVerifyOtp = async (email: string, otp: string) => {
 	try {
 		const res = await axios.post(`${api.baseUrl}/api/auth/verify-otp`, {
 			email,
@@ -45,10 +45,10 @@ const authVerifyOtp = async(email: string, otp: string) => {
 		})
 		console.log(res.data)
 		return res.data
-	} catch(err: any) {
+	} catch (err: any) {
 		console.log("Verify Error: ", err.response?.data || err.message)
 		throw err
 	}
 }
 
-export default {authSignup, authSignin, authVerifyOtp}
+export default { authSignup, authSignin, authVerifyOtp }
