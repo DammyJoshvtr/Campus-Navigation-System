@@ -1,3 +1,10 @@
+"""
+config.py
+---------
+Configuration classes loaded by the app factory.
+All secrets come from environment variables — never hardcoded.
+"""
+
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -6,78 +13,61 @@ load_dotenv()
 
 
 class Config:
-    """Base configuration."""
-
-    # Core
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+    # ── Core Flask ────────────────────────────────────────────────────────────
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
     DEBUG = False
     TESTING = False
 
-    # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL", "postgresql://user:password@localhost:5432/campus_nav_db"
-    )
+    # ── SQLAlchemy ────────────────────────────────────────────────────────────
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///dev.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-    }
+    # Return dicts instead of Row objects from raw queries
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
-    # JWT
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "jwt-secret-change-in-production")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))
-    )
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 2592000))
-    )
-    JWT_BLACKLIST_ENABLED = True
-    JWT_BLACKLIST_TOKEN_CHECKS = ["access", "refresh"]
+    # ── JWT ───────────────────────────────────────────────────────────────────
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "jwt-dev-secret")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
+    JWT_TOKEN_LOCATION = ["headers"]
+    JWT_HEADER_NAME = "Authorization"
+    JWT_HEADER_TYPE = "Bearer"
 
-    # Flask-Mail
-    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-    MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
-    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME")
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")
+    # ── Flask-Mail ────────────────────────────────────────────────────────────
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
 
-    # App
-    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    # ── Google OAuth ──────────────────────────────────────────────────────────
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
-    # Rate Limiting
-    RATELIMIT_DEFAULT = os.getenv("RATELIMIT_DEFAULT", "200 per day, 50 per hour")
-    RATELIMIT_STORAGE_URL = os.getenv("RATELIMIT_STORAGE_URL", "memory://")
-    RATELIMIT_HEADERS_ENABLED = True
+    # ── App-specific ──────────────────────────────────────────────────────────
+    ALLOWED_EMAIL_DOMAIN = os.environ.get("ALLOWED_EMAIL_DOMAIN", "edu.ng")
+    OTP_EXPIRY_MINUTES = int(os.environ.get("OTP_EXPIRY_MINUTES", 10))
 
 
 class DevelopmentConfig(Config):
-    """Development configuration."""
     DEBUG = True
-    SQLALCHEMY_ECHO = True  # Log SQL queries
 
 
 class ProductionConfig(Config):
-    """Production configuration."""
     DEBUG = False
-    SQLALCHEMY_ECHO = False
+    # Enforce HTTPS-only cookies in production
+    JWT_COOKIE_SECURE = True
 
 
 class TestingConfig(Config):
-    """Testing configuration."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=5)
-    WTF_CSRF_ENABLED = False
+    # Disable mail sending in tests
+    MAIL_SUPPRESS_SEND = True
 
 
+# Map name → class so the factory can do config_map[name]
 config_map = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
     "testing": TestingConfig,
 }
-
-
-def get_config():
-    env = os.getenv("FLASK_ENV", "development")
-    return config_map.get(env, DevelopmentConfig)

@@ -1,75 +1,74 @@
+"""
+app/models/location.py
+----------------------
+Location    — campus places seeded from coordinates.json.
+SavedLocation — join table between a user and a location they bookmarked.
+"""
+
 from datetime import datetime, timezone
 from app import db
 
 
-class LocationType(db.Enum):
-    pass
-
-
-LOCATION_TYPES = (
-    "Lecture Room",
-    "Faculty",
-    "Library",
-    "Cafeteria",
-    "Laboratory",
-    "Administrative",
-    "Sports Facility",
-    "Hostel",
-    "Clinic",
-    "Parking",
-    "Chapel",
-    "Other",
-)
-
-
 class Location(db.Model):
-    """A campus point-of-interest."""
-
     __tablename__ = "locations"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False, index=True)
-    description = db.Column(db.Text, nullable=True)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    type = db.Column(
-        db.Enum(*LOCATION_TYPES, name="location_type_enum"),
-        nullable=False,
-        default="Other",
-    )
-    building_code = db.Column(db.String(20), nullable=True)   # e.g. "ENG-A"
-    floor = db.Column(db.Integer, nullable=True)              # null = outdoor
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(
-        db.DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False,
-    )
-    updated_at = db.Column(
-        db.DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-        nullable=False,
-    )
+    id        = db.Column(db.Integer, primary_key=True)
+    name      = db.Column(db.String(255), nullable=False)
+    latitude  = db.Column(db.Float,       nullable=False)
+    longitude = db.Column(db.Float,       nullable=False)
+    type      = db.Column(db.String(100), nullable=False)
 
-    __table_args__ = (
-        db.CheckConstraint("latitude BETWEEN -90 AND 90", name="ck_lat_range"),
-        db.CheckConstraint("longitude BETWEEN -180 AND 180", name="ck_lng_range"),
+    # ── Relationships ─────────────────────────────────────────────────────────
+    saved_by = db.relationship(
+        "SavedLocation",
+        back_populates="location",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
     )
-
-    def __repr__(self) -> str:
-        return f"<Location id={self.id} name={self.name!r}>"
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "latitude": self.latitude,
-            "longitude": self.longitude,
+            "id":        self.id,
+            "name":      self.name,
+            "coordinate": {
+                "latitude":  self.latitude,
+                "longitude": self.longitude,
+            },
+            # Keep the same key the frontend already uses
             "type": self.type,
-            "building_code": self.building_code,
-            "floor": self.floor,
-            "is_active": self.is_active,
-            "created_at": self.created_at.isoformat(),
         }
+
+    def __repr__(self) -> str:
+        return f"<Location {self.id}: {self.name}>"
+
+
+class SavedLocation(db.Model):
+    __tablename__ = "saved_locations"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    location_id = db.Column(db.Integer, db.ForeignKey("locations.id", ondelete="CASCADE"), nullable=False)
+    created_at  = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    # Prevent a user from saving the same location twice
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "location_id", name="uq_user_location"),
+    )
+
+    # ── Relationships ─────────────────────────────────────────────────────────
+    user     = db.relationship("User",     back_populates="saved_locations")
+    location = db.relationship("Location", back_populates="saved_by")
+
+    def to_dict(self) -> dict:
+        return {
+            "id":         self.id,
+            "created_at": self.created_at.isoformat(),
+            "location":   self.location.to_dict(),
+        }
+
+    def __repr__(self) -> str:
+        return f"<SavedLocation user={self.user_id} location={self.location_id}>"

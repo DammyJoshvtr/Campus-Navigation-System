@@ -1,60 +1,64 @@
 """
-Input validation helpers.
-All functions raise ValueError with a descriptive message on failure.
+app/utils/validators.py
+-----------------------
+Input validation helpers shared across routes.
+Keeping validation out of routes keeps the route handlers thin.
 """
+
+import os
 import re
 
-# Minimum 8 chars, at least one letter and one digit
-_PASSWORD_RE = re.compile(r"^(?=.*[A-Za-z])(?=.*\d).{8,}$")
-_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+ALLOWED_DOMAIN = os.environ.get("ALLOWED_EMAIL_DOMAIN", "edu.ng")
+
+# Simple email regex — good enough for our .edu.ng check
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def validate_email(email: str) -> str:
-    email = email.strip().lower()
+def is_valid_email(email: str) -> bool:
+    """Return True if the string looks like a valid email address."""
+    return bool(EMAIL_RE.match(email.strip()))
+
+
+def is_university_email(email: str) -> bool:
+    """Return True if the email ends with the configured university domain."""
+    return email.strip().lower().endswith(f"@{ALLOWED_DOMAIN}")
+
+
+def validate_signup_payload(data: dict) -> list[str]:
+    """
+    Validate the signup request body.
+    Returns a list of human-readable error strings (empty = valid).
+    """
+    errors: list[str] = []
+
+    fullname = (data.get("fullname") or "").strip()
+    email    = (data.get("email")    or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not fullname:
+        errors.append("Full name is required.")
+    elif len(fullname) < 2:
+        errors.append("Full name must be at least 2 characters.")
+
     if not email:
-        raise ValueError("Email is required.")
-    if not _EMAIL_RE.match(email):
-        raise ValueError("Invalid email address format.")
-    if len(email) > 255:
-        raise ValueError("Email address is too long (max 255 chars).")
-    return email
+        errors.append("Email is required.")
+    elif not is_valid_email(email):
+        errors.append("Email address is not valid.")
+    elif not is_university_email(email):
+        errors.append(f"Email must be a university address ending with @{ALLOWED_DOMAIN}.")
 
-
-def validate_password(password: str) -> str:
     if not password:
-        raise ValueError("Password is required.")
-    if not _PASSWORD_RE.match(password):
-        raise ValueError(
-            "Password must be at least 8 characters and contain "
-            "at least one letter and one digit."
-        )
-    return password
+        errors.append("Password is required.")
+    elif len(password) < 8:
+        errors.append("Password must be at least 8 characters.")
+
+    return errors
 
 
-def validate_name(name: str) -> str:
-    name = name.strip()
-    if not name:
-        raise ValueError("Name is required.")
-    if len(name) < 2:
-        raise ValueError("Name must be at least 2 characters.")
-    if len(name) > 120:
-        raise ValueError("Name must be at most 120 characters.")
-    return name
-
-
-def validate_coordinate(value, field_name: str, min_val: float, max_val: float) -> float:
-    try:
-        val = float(value)
-    except (TypeError, ValueError):
-        raise ValueError(f"'{field_name}' must be a valid number.")
-    if not (min_val <= val <= max_val):
-        raise ValueError(f"'{field_name}' must be between {min_val} and {max_val}.")
-    return val
-
-
-def validate_lat(value, field_name: str = "latitude") -> float:
-    return validate_coordinate(value, field_name, -90.0, 90.0)
-
-
-def validate_lng(value, field_name: str = "longitude") -> float:
-    return validate_coordinate(value, field_name, -180.0, 180.0)
+def validate_login_payload(data: dict) -> list[str]:
+    errors: list[str] = []
+    if not (data.get("email") or "").strip():
+        errors.append("Email is required.")
+    if not (data.get("password") or "").strip():
+        errors.append("Password is required.")
+    return errors

@@ -11,10 +11,12 @@ const TabBarIcon = ({ focused, name, icon, theme }: any) => {
   return (
     <View
       style={{
+        display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         width: 60,
-        marginTop: 27,
+        backgroundColor: "red",
       }}
     >
       {/* Icon background */}
@@ -61,6 +63,7 @@ const Layout = () => {
           tabBarItemStyle: {
             justifyContent: "center",
             alignItems: "center",
+            backgroundColor: "blue",
           },
           tabBarStyle: {
             height: 90 + insets.bottom,
