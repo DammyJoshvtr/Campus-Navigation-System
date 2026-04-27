@@ -5,12 +5,14 @@ native/node_modules/
 # Python
 venv/
 backend/venv/
+joshua_backend/venv/
 __pycache__/
 *.pyc
 
 # Environment variables
 .env
 backend/.env
+joshua_backend/.env
 
 # React Native / Expo
 native/.expo/
