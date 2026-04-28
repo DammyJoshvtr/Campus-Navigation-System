@@ -2,7 +2,7 @@ import { useTheme } from "@/context/ThemeContext";
 import api from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Navigation, Trash2, MapPin } from "lucide-react-native";
+import { ArrowLeft, MapPin, Navigation, Trash2 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,13 +10,13 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface SavedDirection {
   id: number;
