@@ -33,6 +33,7 @@ const VerifyEmail = () => {
       
       if (res.user) {
         const profileData = {
+          id: res.user.id || null,
           name: res.user.name || "",
           email: res.user.email || "",
           studentId: "",

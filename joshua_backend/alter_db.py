@@ -20,6 +20,25 @@ with app.app_context():
     except Exception as e:
         print(f"otp_expires_at might already exist or error: {e}")
 
+    try:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS saved_directions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                origin_name VARCHAR(255) NOT NULL,
+                origin_lat FLOAT NOT NULL,
+                origin_lng FLOAT NOT NULL,
+                destination_name VARCHAR(255) NOT NULL,
+                destination_lat FLOAT NOT NULL,
+                destination_lng FLOAT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ''')
+        print("Created saved_directions table.")
+    except Exception as e:
+        print(f"saved_directions error: {e}")
+
     mysql.connection.commit()
     cursor.close()
     print("Database alteration complete.")

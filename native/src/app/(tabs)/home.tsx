@@ -27,6 +27,7 @@ import { MapPin } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Keyboard,
   ScrollView,
   StatusBar,
@@ -44,6 +45,8 @@ import MapView, {
 } from "react-native-maps";
 import FAB from "../../components/fabs/Fab";
 import Searchbar from "../../components/Searchbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "@/services/api";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -79,6 +82,19 @@ export default function Home() {
     distance: number;
     duration: number;
   } | null>(null);
+  
+  const [currentRouteDetails, setCurrentRouteDetails] = useState<{
+    originName: string;
+    originLat: number;
+    originLng: number;
+    destName: string;
+    destLat: number;
+    destLng: number;
+  } | null>(null);
+
+  const [isSavingRoute, setIsSavingRoute] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const { coords = [], loading, error, refetch } = useLocations();
   const userLocation = useUserLocation();
@@ -150,6 +166,16 @@ export default function Home() {
   // Handle route from Directions screen params
   React.useEffect(() => {
     if (!parsedFrom?.coordinate || !parsedTo?.coordinate) return;
+    
+    setCurrentRouteDetails({
+      originName: parsedFrom.name || "Unknown Origin",
+      originLat: parsedFrom.coordinate.latitude,
+      originLng: parsedFrom.coordinate.longitude,
+      destName: parsedTo.name || "Unknown Destination",
+      destLat: parsedTo.coordinate.latitude,
+      destLng: parsedTo.coordinate.longitude,
+    });
+    
     fetchRoute(parsedFrom.coordinate, parsedTo.coordinate);
   }, [parsedFrom, parsedTo, fetchRoute]);
 
@@ -230,18 +256,79 @@ export default function Home() {
   const handleGetDirectionsFromSheet = async (location: any) => {
     if (!userLocation) return;
     sheetRef.current?.close();
-    await fetchRoute(
-      { latitude: userLocation.latitude, longitude: userLocation.longitude },
-      {
-        latitude: location.coordinate.latitude,
-        longitude: location.coordinate.longitude,
-      },
-    );
+    
+    const start = { latitude: userLocation.latitude, longitude: userLocation.longitude };
+    const end = { latitude: location.coordinate.latitude, longitude: location.coordinate.longitude };
+    
+    setCurrentRouteDetails({
+      originName: "Current Location",
+      originLat: start.latitude,
+      originLng: start.longitude,
+      destName: location.name || "Selected Location",
+      destLat: end.latitude,
+      destLng: end.longitude,
+    });
+    
+    await fetchRoute(start, end);
   };
 
   const clearRoute = () => {
     setRouteCoords([]);
     setRouteInfo(null);
+    setCurrentRouteDetails(null);
+  };
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setToastMessage(null));
+      }, 2500);
+    });
+  };
+
+  const handleSaveDirection = async () => {
+    if (!currentRouteDetails) return;
+    
+    setIsSavingRoute(true);
+    try {
+      const profileRaw = await AsyncStorage.getItem("@campus_profile");
+      if (!profileRaw) {
+        showToast("You must be logged in to save routes.");
+        return;
+      }
+      const profile = JSON.parse(profileRaw);
+      const userId = profile.id;
+      if (!userId) {
+        showToast("User ID not found. Please log in again.");
+        return;
+      }
+
+      await api.saveDirection({
+        user_id: userId,
+        origin_name: currentRouteDetails.originName,
+        origin_lat: currentRouteDetails.originLat,
+        origin_lng: currentRouteDetails.originLng,
+        destination_name: currentRouteDetails.destName,
+        destination_lat: currentRouteDetails.destLat,
+        destination_lng: currentRouteDetails.destLng,
+      });
+
+      showToast("✨ Route saved successfully!");
+    } catch (err) {
+      console.log("Save Route Error", err);
+      showToast("❌ Failed to save route.");
+    } finally {
+      setIsSavingRoute(false);
+    }
   };
 
   // ── Loading screen ──────────────────────────────────────────────────────────
@@ -484,9 +571,18 @@ export default function Home() {
         ref={sheetRef}
         location={selectedLocation}
         onGetDirections={handleGetDirectionsFromSheet}
+        onSaveDirection={handleSaveDirection}
+        isSaving={isSavingRoute}
         loading={routeLoading}
         routeInfo={routeInfo ?? undefined}
       />
+
+      {/* Animated Toast */}
+      {toastMessage && (
+        <Animated.View style={[styles.toastContainer, { opacity: fadeAnim, backgroundColor: theme.surfaceAlt, shadowColor: theme.shadow }]}>
+          <Text style={[styles.toastText, { color: theme.text }]}>{toastMessage}</Text>
+        </Animated.View>
+      )}
     </>
   );
 }
@@ -640,5 +736,26 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#374151",
     fontFamily: "PlusJakartaSans_500Medium",
+  },
+
+  // ── Toast ──
+  toastContainer: {
+    position: "absolute",
+    bottom: 120,
+    alignSelf: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    zIndex: 100,
+  },
+  toastText: {
+    fontSize: 14,
+    fontFamily: "PlusJakartaSans_600SemiBold",
   },
 });

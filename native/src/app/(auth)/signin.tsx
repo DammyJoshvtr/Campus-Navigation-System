@@ -57,6 +57,7 @@ const Signin = () => {
         // Save user profile from response
         if (res.user) {
           const profileData = {
+            id: res.user.id || null,
             name: res.user.name || "",
             email: res.user.email || "",
             studentId: "",

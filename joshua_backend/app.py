@@ -235,5 +235,84 @@ def resend_otp():
 
     return jsonify({"message": "OTP resent successfully."}), 200
 
+# ==========================================
+# SAVED DIRECTIONS API
+# ==========================================
+
+@app.route('/api/directions/save', methods=['POST'])
+def save_direction():
+    data = request.get_json(silent=True) or {}
+    user_id = data.get('user_id')
+    origin_name = data.get('origin_name')
+    origin_lat = data.get('origin_lat')
+    origin_lng = data.get('origin_lng')
+    destination_name = data.get('destination_name')
+    destination_lat = data.get('destination_lat')
+    destination_lng = data.get('destination_lng')
+
+    if not all([user_id, origin_name, origin_lat, origin_lng, destination_name, destination_lat, destination_lng]):
+        return jsonify({"message": "All fields are required"}), 400
+
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO saved_directions 
+            (user_id, origin_name, origin_lat, origin_lng, destination_name, destination_lat, destination_lng)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ''', (user_id, origin_name, origin_lat, origin_lng, destination_name, destination_lat, destination_lng))
+        mysql.connection.commit()
+        direction_id = cursor.lastrowid
+        cursor.close()
+        return jsonify({"message": "Direction saved successfully", "id": direction_id}), 201
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Failed to save direction: {str(e)}"}), 500
+
+
+@app.route('/api/directions/<int:user_id>', methods=['GET'])
+def get_saved_directions(user_id):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            SELECT id, origin_name, origin_lat, origin_lng, destination_name, destination_lat, destination_lng, created_at
+            FROM saved_directions
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+        ''', (user_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        directions = []
+        for row in rows:
+            directions.append({
+                "id": row[0],
+                "origin_name": row[1],
+                "origin_lat": row[2],
+                "origin_lng": row[3],
+                "destination_name": row[4],
+                "destination_lat": row[5],
+                "destination_lng": row[6],
+                "created_at": str(row[7])
+            })
+            
+        return jsonify({"directions": directions}), 200
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Failed to fetch directions: {str(e)}"}), 500
+
+
+@app.route('/api/directions/<int:direction_id>', methods=['DELETE'])
+def delete_direction(direction_id):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('DELETE FROM saved_directions WHERE id = %s', (direction_id,))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Direction deleted successfully"}), 200
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Failed to delete direction: {str(e)}"}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
