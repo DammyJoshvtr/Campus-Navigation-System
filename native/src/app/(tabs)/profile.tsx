@@ -204,10 +204,11 @@ export default function Profile() {
       {
         text: "Log Out",
         style: "destructive",
-        onPress: () => {
-          // Clear session then navigate to index
-          AsyncStorage.removeItem("@campus_session");
-          // router.replace("/"); — uncomment if you have auth
+        onPress: async () => {
+          // Clear session and profile, then navigate to index
+          await AsyncStorage.removeItem("@campus_session");
+          await AsyncStorage.removeItem("@campus_profile");
+          router.replace("/");
         },
       },
     ]);

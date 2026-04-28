@@ -119,14 +119,14 @@ def verify_otp():
         return jsonify({"message": "Email and OTP are required"}), 400
 
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT id, is_verified, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
+    cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
     user = cursor.fetchone()
 
     if not user:
         cursor.close()
         return jsonify({"message": "User not found"}), 404
 
-    user_id, is_verified, db_otp, expires_at = user
+    user_id, name, is_verified, db_otp, expires_at = user
 
     if is_verified:
         cursor.close()
@@ -146,7 +146,10 @@ def verify_otp():
     cursor.close()
 
     # Provide token or session here if needed, for now just success
-    return jsonify({"message": "Email verified successfully"}), 200
+    return jsonify({
+        "message": "Email verified successfully",
+        "user": {"id": user_id, "name": name, "email": email}
+    }), 200
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
