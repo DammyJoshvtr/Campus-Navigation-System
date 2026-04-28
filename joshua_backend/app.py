@@ -6,23 +6,28 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_mail import Mail, Message
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "49494asdklfjasdklflaksdf"
+app.secret_key = os.environ.get("SECRET_KEY", "49494asdklfjasdklflaksdf")
 CORS(app)  # Enable CORS for frontend
 
 # Database Config
-app.config['MYSQL_HOST'] = "localhost"
-app.config['MYSQL_USER'] = "root"
-app.config['MYSQL_PASSWORD'] = ""
-app.config['MYSQL_DB'] = "flask_database"
+app.config['MYSQL_HOST'] = os.environ.get("MYSQL_HOST", "localhost")
+app.config['MYSQL_USER'] = os.environ.get("MYSQL_USER", "root")
+app.config['MYSQL_PASSWORD'] = os.environ.get("MYSQL_PASSWORD", "")
+app.config['MYSQL_DB'] = os.environ.get("MYSQL_DB", "flask_database")
 
-# Email Config (Replace with real credentials or leave for testing)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your-email@gmail.com'
-app.config['MAIL_PASSWORD'] = 'your-app-password'
-app.config['MAIL_DEFAULT_SENDER'] = 'your-email@gmail.com'
+# Email Config (Using environment variables)
+app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER", 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get("MAIL_PORT", 587))
+app.config['MAIL_USE_TLS'] = os.environ.get("MAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_DEFAULT_SENDER")
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
@@ -231,4 +236,4 @@ def resend_otp():
     return jsonify({"message": "OTP resent successfully."}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
