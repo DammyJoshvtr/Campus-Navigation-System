@@ -12,7 +12,7 @@ interface SignupData {
 }
 
 const api = {
-  baseUrl: "http://192.168.231.171:5000",
+  baseUrl: "http://192.168.29.171:5000",
 };
 
 const authSignup = async (data: SignupData) => {
@@ -104,10 +104,10 @@ const deleteDirection = async (directionId: number) => {
   }
 };
 
-export default { 
-  authSignup, 
-  authSignin, 
-  authVerifyOtp, 
+export default {
+  authSignup,
+  authSignin,
+  authVerifyOtp,
   authResendOtp,
   saveDirection,
   getSavedDirections,
