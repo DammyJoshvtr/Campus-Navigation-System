@@ -24,7 +24,7 @@ import {
 import { getColor, getIcon } from "@/services/iconUtitils";
 import BottomSheet from "@gorhom/bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { MapPin } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import {
@@ -95,6 +95,22 @@ export default function Home() {
   const [isSavingRoute, setIsSavingRoute] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const [eventsData, setEventsData] = useState<any[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchEvents = async () => {
+        try {
+          const res = await api.getEvents();
+          setEventsData(res.events || []);
+        } catch (err) {
+          console.error("Home: Failed to fetch events", err);
+        }
+      };
+      fetchEvents();
+    }, []),
+  );
 
   const { coords = [], loading, error, refetch } = useLocations();
   const userLocation = useUserLocation();
@@ -340,10 +356,10 @@ export default function Home() {
         destination_lng: currentRouteDetails.destLng,
       });
 
-      showToast("✨ Route saved successfully!");
+      showToast("Route saved successfully!");
     } catch (err) {
       console.log("Save Route Error", err);
-      showToast("❌ Failed to save route.");
+      showToast("Failed to save route.");
     } finally {
       setIsSavingRoute(false);
     }
@@ -402,26 +418,37 @@ export default function Home() {
             onRegionChangeComplete={(reg) => setRegion(reg)}
             onPress={clearRoute} // tap map background → clear route
           >
-            {displayedLocations.map((item: any) => (
-              <Marker
-                key={item.id}
-                coordinate={item.coordinate}
-                title={item.name}
-                description={item.type || "Location"}
-                onPress={() => handleOpenSheet(item)}
-                tracksViewChanges={false}
-              >
-                <View style={styles.markerBubble}>
-                  {React.createElement(getIcon(item.type), {
-                    size: 16,
-                    color: getColor(item.type),
-                  })}
-                  <Text style={styles.markerText} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                </View>
-              </Marker>
-            ))}
+            {displayedLocations.map((item: any) => {
+              const eventCount = eventsData.filter(
+                (e) =>
+                  e.locationName?.toLowerCase() === item.name?.toLowerCase(),
+              ).length;
+              return (
+                <Marker
+                  key={item.id}
+                  coordinate={item.coordinate}
+                  title={item.name}
+                  description={item.type || "Location"}
+                  onPress={() => handleOpenSheet(item)}
+                  tracksViewChanges={false}
+                >
+                  {/* {eventCount > 0 && (
+                    <View style={styles.badgeContainer}>
+                      <Text style={styles.badgeText}>{eventCount}</Text>
+                    </View>
+                  )} */}
+                  <View style={styles.markerBubble}>
+                    {React.createElement(getIcon(item.type), {
+                      size: 16,
+                      color: getColor(item.type),
+                    })}
+                    <Text style={styles.markerText} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                  </View>
+                </Marker>
+              );
+            })}
 
             {routeCoords.length > 0 && (
               <>
@@ -857,5 +884,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+  },
+  badgeContainer: {
+    position: "absolute",
+    // top: -8,
+    // right: -8,
+    backgroundColor: "#EF4444",
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: "white",
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontFamily: "PlusJakartaSans_700Bold",
   },
 });

@@ -314,5 +314,71 @@ def delete_direction(direction_id):
         return jsonify({"message": f"Failed to delete direction: {str(e)}"}), 500
 
 
+# ==========================================
+# EVENTS API
+# ==========================================
+
+@app.route('/api/events/create', methods=['POST'])
+def create_event():
+    data = request.get_json(silent=True) or {}
+    title = data.get('title')
+    description = data.get('description')
+    locationName = data.get('locationName')
+    date = data.get('date')
+    time = data.get('time')
+    status = data.get('status', 'upcoming')
+    image = data.get('image')
+    author = data.get('author')
+
+    if not title:
+        return jsonify({"message": "Title is required"}), 400
+
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO events 
+            (title, description, locationName, date, time, status, image, author)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ''', (title, description, locationName, date, time, status, image, author))
+        mysql.connection.commit()
+        event_id = cursor.lastrowid
+        cursor.close()
+        return jsonify({"message": "Event created successfully", "id": event_id}), 201
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Failed to create event: {str(e)}"}), 500
+
+@app.route('/api/events', methods=['GET'])
+def get_events():
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            SELECT id, title, description, locationName, date, time, status, image, author, created_at
+            FROM events
+            ORDER BY created_at DESC
+        ''')
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        events_list = []
+        for row in rows:
+            events_list.append({
+                "id": row[0],
+                "title": row[1],
+                "description": row[2],
+                "locationName": row[3],
+                "date": row[4],
+                "time": row[5],
+                "status": row[6],
+                "image": row[7],
+                "author": row[8],
+                "created_at": str(row[9])
+            })
+            
+        return jsonify({"events": events_list}), 200
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Failed to fetch events: {str(e)}"}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

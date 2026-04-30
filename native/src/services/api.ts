@@ -11,6 +11,17 @@ interface SignupData {
   password: string;
 }
 
+export interface EventData {
+  title: string;
+  description: string;
+  locationName: string;
+  date: string;
+  time: string;
+  status: string;
+  image?: string;
+  author: string;
+}
+
 const api = {
   baseUrl: "http://192.168.149.171:5000",
 };
@@ -106,6 +117,26 @@ const deleteDirection = async (directionId: number) => {
   }
 };
 
+const createEvent = async (data: EventData) => {
+  try {
+    const res = await axios.post(`${api.baseUrl}/api/events/create`, data);
+    return res.data;
+  } catch (err: any) {
+    console.log("Create Event Error: ", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+const getEvents = async () => {
+  try {
+    const res = await axios.get(`${api.baseUrl}/api/events`);
+    return res.data;
+  } catch (err: any) {
+    console.log("Get Events Error: ", err.response?.data || err.message);
+    throw err;
+  }
+};
+
 export default {
   authSignup,
   authSignin,
@@ -114,4 +145,6 @@ export default {
   saveDirection,
   getSavedDirections,
   deleteDirection,
+  createEvent,
+  getEvents,
 };
