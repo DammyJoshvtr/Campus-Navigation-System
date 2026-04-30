@@ -12,7 +12,7 @@ interface SignupData {
 }
 
 const api = {
-  baseUrl: "http://192.168.29.171:5000",
+  baseUrl: "http://192.168.149.171:5000",
 };
 
 const authSignup = async (data: SignupData) => {
@@ -96,7 +96,9 @@ const getSavedDirections = async (userId: number) => {
 
 const deleteDirection = async (directionId: number) => {
   try {
-    const res = await axios.delete(`${api.baseUrl}/api/directions/${directionId}`);
+    const res = await axios.delete(
+      `${api.baseUrl}/api/directions/${directionId}`,
+    );
     return res.data;
   } catch (err: any) {
     console.log("Delete Direction Error: ", err.response?.data || err.message);
@@ -111,5 +113,5 @@ export default {
   authResendOtp,
   saveDirection,
   getSavedDirections,
-  deleteDirection
+  deleteDirection,
 };

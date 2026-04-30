@@ -15,6 +15,7 @@ import LocationError from "@/components/error/locationError";
 import { useTheme } from "@/context/ThemeContext";
 import useLocations from "@/hooks/getLocation";
 import { useUserLocation } from "@/hooks/useLocation";
+import api from "@/services/api";
 import {
   directionService,
   formatDistance,
@@ -22,6 +23,7 @@ import {
 } from "@/services/directionServices";
 import { getColor, getIcon } from "@/services/iconUtitils";
 import BottomSheet from "@gorhom/bottom-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MapPin } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
@@ -45,8 +47,6 @@ import MapView, {
 } from "react-native-maps";
 import FAB from "../../components/fabs/Fab";
 import Searchbar from "../../components/Searchbar";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import api from "@/services/api";
 
 const typeStyles: any = {
   "Lecture Rooms": { bg: "#E3F2FD", text: "#1E88E5" },
@@ -82,7 +82,7 @@ export default function Home() {
     distance: number;
     duration: number;
   } | null>(null);
-  
+
   const [currentRouteDetails, setCurrentRouteDetails] = useState<{
     originName: string;
     originLat: number;
@@ -166,7 +166,7 @@ export default function Home() {
   // Handle route from Directions screen params
   React.useEffect(() => {
     if (!parsedFrom?.coordinate || !parsedTo?.coordinate) return;
-    
+
     setCurrentRouteDetails({
       originName: parsedFrom.name || "Unknown Origin",
       originLat: parsedFrom.coordinate.latitude,
@@ -175,7 +175,15 @@ export default function Home() {
       destLat: parsedTo.coordinate.latitude,
       destLng: parsedTo.coordinate.longitude,
     });
-    
+
+    // Ensure selectedLocation is populated so the bottom sheet has data
+    setSelectedLocation({
+      name: parsedTo.name || "Unknown Destination",
+      type: "Location",
+      description: "Navigating to this location.",
+      coordinate: parsedTo.coordinate,
+    });
+
     fetchRoute(parsedFrom.coordinate, parsedTo.coordinate);
   }, [parsedFrom, parsedTo, fetchRoute]);
 
@@ -256,10 +264,16 @@ export default function Home() {
   const handleGetDirectionsFromSheet = async (location: any) => {
     if (!userLocation) return;
     sheetRef.current?.close();
-    
-    const start = { latitude: userLocation.latitude, longitude: userLocation.longitude };
-    const end = { latitude: location.coordinate.latitude, longitude: location.coordinate.longitude };
-    
+
+    const start = {
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+    };
+    const end = {
+      latitude: location.coordinate.latitude,
+      longitude: location.coordinate.longitude,
+    };
+
     setCurrentRouteDetails({
       originName: "Current Location",
       originLat: start.latitude,
@@ -268,7 +282,11 @@ export default function Home() {
       destLat: end.latitude,
       destLng: end.longitude,
     });
-    
+
+    // Don't fully close the sheet, just snap it to a small size or let it be closed
+    // but the user can open it again.
+    sheetRef.current?.close();
+
     await fetchRoute(start, end);
   };
 
@@ -297,7 +315,7 @@ export default function Home() {
 
   const handleSaveDirection = async () => {
     if (!currentRouteDetails) return;
-    
+
     setIsSavingRoute(true);
     try {
       const profileRaw = await AsyncStorage.getItem("@campus_profile");
@@ -508,12 +526,7 @@ export default function Home() {
 
           {/* ── ETA Box ── */}
           {routeInfo && (
-            <View
-              style={[
-                styles.etaBox,
-                { backgroundColor: theme.surface, shadowColor: theme.shadow },
-              ]}
-            >
+            <View style={[styles.etaBox, { shadowColor: theme.shadow }]}>
               <View style={styles.etaRow}>
                 <Text style={[styles.etaMain, { color: theme.primary }]}>
                   🕒 {formatDuration(routeInfo.duration)}
@@ -525,17 +538,87 @@ export default function Home() {
                   📍 {formatDistance(routeInfo.distance)}
                 </Text>
               </View>
-              <TouchableOpacity onPress={clearRoute} style={styles.clearBtn}>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: theme.textMuted,
-                    fontFamily: "PlusJakartaSans_500Medium",
-                  }}
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 8,
+                  marginTop: 12,
+                  width: 300,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={handleSaveDirection}
+                  style={[
+                    styles.actionBtn,
+                    {
+                      backgroundColor: theme.primary + "15",
+                      height: 40,
+                      width: 100,
+                    },
+                  ]}
                 >
-                  ✕ Clear
-                </Text>
-              </TouchableOpacity>
+                  {isSavingRoute ? (
+                    <ActivityIndicator size="small" color={theme.primary} />
+                  ) : (
+                    <Text
+                      style={{
+                        color: theme.primary,
+                        fontSize: 13,
+                        fontFamily: "PlusJakartaSans_700Bold",
+                        textAlign: "center",
+                      }}
+                    >
+                      Save Route
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => sheetRef.current?.snapToIndex(0)}
+                  style={[
+                    styles.actionBtn,
+                    {
+                      backgroundColor: theme.surfaceAlt,
+                      borderColor: theme.border,
+                      borderWidth: 1,
+                      flex: 1,
+                      height: 40,
+                      width: 100,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontSize: 13,
+                      fontFamily: "PlusJakartaSans_600SemiBold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Details
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={clearRoute}
+                  style={[
+                    styles.actionBtn,
+                    { backgroundColor: "#fee2e2", flex: 1 },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: "#ef4444",
+                      fontSize: 13,
+                      fontFamily: "PlusJakartaSans_600SemiBold",
+                      textAlign: "center",
+                    }}
+                  >
+                    ✕ Clear
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
@@ -579,8 +662,19 @@ export default function Home() {
 
       {/* Animated Toast */}
       {toastMessage && (
-        <Animated.View style={[styles.toastContainer, { opacity: fadeAnim, backgroundColor: theme.surfaceAlt, shadowColor: theme.shadow }]}>
-          <Text style={[styles.toastText, { color: theme.text }]}>{toastMessage}</Text>
+        <Animated.View
+          style={[
+            styles.toastContainer,
+            {
+              opacity: fadeAnim,
+              backgroundColor: theme.surfaceAlt,
+              shadowColor: theme.shadow,
+            },
+          ]}
+        >
+          <Text style={[styles.toastText, { color: theme.text }]}>
+            {toastMessage}
+          </Text>
         </Animated.View>
       )}
     </>
@@ -684,10 +778,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     elevation: 6,
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    flexDirection: "row",
+    // shadowOpacity: 0.12,
+    // shadowRadius: 8,
+    // shadowOffset: { width: 0, height: 3 },
+    flexDirection: "column",
     alignItems: "center",
     gap: 12,
   },
@@ -757,5 +851,11 @@ const styles = StyleSheet.create({
   toastText: {
     fontSize: 14,
     fontFamily: "PlusJakartaSans_600SemiBold",
+  },
+  actionBtn: {
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
   },
 });
