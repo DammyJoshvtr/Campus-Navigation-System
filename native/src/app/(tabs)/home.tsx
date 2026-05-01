@@ -432,16 +432,21 @@ export default function Home() {
                   onPress={() => handleOpenSheet(item)}
                   tracksViewChanges={false}
                 >
-                  {/* {eventCount > 0 && (
-                    <View style={styles.badgeContainer}>
-                      <Text style={styles.badgeText}>{eventCount}</Text>
-                    </View>
-                  )} */}
                   <View style={styles.markerBubble}>
+                    {/* Badge */}
+                    {eventCount > 0 && (
+                      <View style={styles.badgeContainer}>
+                        <Text style={styles.badgeText}>{eventCount}</Text>
+                      </View>
+                    )}
+
+                    {/* Icon */}
                     {React.createElement(getIcon(item.type), {
                       size: 16,
                       color: getColor(item.type),
                     })}
+
+                    {/* Text */}
                     <Text style={styles.markerText} numberOfLines={1}>
                       {item.name}
                     </Text>
@@ -775,6 +780,7 @@ const styles = StyleSheet.create({
   },
 
   markerBubble: {
+    position: "relative",
     backgroundColor: "white",
     paddingHorizontal: 8,
     paddingVertical: 5,
@@ -887,10 +893,10 @@ const styles = StyleSheet.create({
   },
   badgeContainer: {
     position: "absolute",
-    // top: -8,
-    // right: -8,
+    top: -6,
+    right: -6,
     backgroundColor: "#EF4444",
-    borderRadius: 12,
+    borderRadius: 999,
     minWidth: 20,
     height: 20,
     alignItems: "center",
@@ -898,6 +904,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderWidth: 1.5,
     borderColor: "white",
+    zIndex: 10,
   },
   badgeText: {
     color: "white",
