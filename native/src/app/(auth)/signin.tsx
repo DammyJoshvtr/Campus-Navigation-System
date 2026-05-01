@@ -35,6 +35,12 @@ const Signin = () => {
     Keyboard.dismiss();
 
     try {
+      if (!email.toLowerCase().endsWith("@run.edu.ng")) {
+        setErrorMsg("Please use your school email (@run.edu.ng).");
+        setIsLoading(false);
+        return;
+      }
+
       if (activeTab === "signup") {
         if (!fullName || !email || !password) {
           setErrorMsg("Please fill in all fields.");

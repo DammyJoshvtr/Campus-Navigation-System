@@ -63,6 +63,9 @@ def signup():
     if not name or not email or not password:
         return jsonify({"message": "Missing required fields"}), 400
 
+    if not email.lower().endswith('@run.edu.ng'):
+        return jsonify({"message": "Only @run.edu.ng emails are allowed"}), 403
+
     cursor = mysql.connection.cursor()
     cursor.execute('SELECT id, is_verified FROM users WHERE email = %s', (email,))
     existing_user = cursor.fetchone()
