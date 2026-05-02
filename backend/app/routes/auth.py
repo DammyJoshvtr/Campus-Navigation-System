@@ -38,7 +38,7 @@ def signup():
     Register a new user.
 
     Body: { fullname, email, password }
-    - Email must end with @edu.ng
+    - Email must end with @run.edu.ng
     - Sends a 6-digit OTP to the email
     - User cannot log in until OTP is verified
     """
@@ -219,7 +219,7 @@ def google_login():
     Body: { id_token: "<token from Google>" }
 
     - Verifies the token cryptographically using google-auth.
-    - Rejects emails that don't end with @edu.ng.
+    - Rejects emails that don't end with @run.edu.ng.
     - Creates the user automatically if they don't exist yet.
     - Google users are pre-verified (no OTP step).
     """
@@ -241,7 +241,7 @@ def google_login():
 
     if not is_university_email(email):
         return error_response(
-            f"Only university email addresses (@edu.ng) are allowed.", 403
+            f"Only university email addresses (@run.edu.ng) are allowed.", 403
         )
 
     # Find or create the user

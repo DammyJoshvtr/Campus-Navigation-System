@@ -8,7 +8,7 @@ Keeping validation out of routes keeps the route handlers thin.
 import os
 import re
 
-ALLOWED_DOMAIN = os.environ.get("ALLOWED_EMAIL_DOMAIN", "edu.ng")
+ALLOWED_DOMAIN = os.environ.get("ALLOWED_EMAIL_DOMAIN", "run.edu.ng")
 
 # Simple email regex — good enough for our .edu.ng check
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")

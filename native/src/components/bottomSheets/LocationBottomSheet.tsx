@@ -44,7 +44,9 @@ type Props = {
     };
   };
   onGetDirections: (location: any) => void;
+  onSaveDirection?: () => void;
   loading:         boolean;
+  isSaving?:       boolean;
   routeInfo?: {
     distance: number;
     duration: number;
@@ -52,10 +54,9 @@ type Props = {
 };
 
 const LocationBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ location, onGetDirections, loading, routeInfo }, ref) => {
+  ({ location, onGetDirections, onSaveDirection, loading, isSaving, routeInfo }, ref) => {
     const { theme } = useTheme();
     const snapPoints = useMemo(() => ["30%", "55%"], []);
-    const [saved, setSaved] = useState(false);
 
     const backdrop = useCallback(
       (props: any) => (
@@ -154,20 +155,28 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                 style={[
                   styles.secondaryBtn,
                   {
-                    backgroundColor: saved ? theme.primary + "15" : theme.surfaceAlt,
-                    borderColor:     saved ? theme.primary        : theme.border,
+                    backgroundColor: theme.surfaceAlt,
+                    borderColor:     theme.border,
                   },
+                  isSaving && { opacity: 0.65 },
                 ]}
-                onPress={() => setSaved((s) => !s)}
+                onPress={() => onSaveDirection?.()}
+                disabled={isSaving || !location || !routeInfo}
               >
-                <Star
-                  size={16}
-                  color={saved ? theme.primary : theme.textSecondary}
-                  fill={saved ? theme.primary : "transparent"}
-                />
-                <Text style={[styles.secondaryBtnText, { color: saved ? theme.primary : theme.textSecondary }]}>
-                  {saved ? "Saved" : "Save"}
-                </Text>
+                {isSaving ? (
+                   <ActivityIndicator color={theme.primary} size="small" />
+                ) : (
+                  <>
+                    <Star
+                      size={16}
+                      color={theme.primary}
+                      fill="transparent"
+                    />
+                    <Text style={[styles.secondaryBtnText, { color: theme.primary }]}>
+                      Save
+                    </Text>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
 

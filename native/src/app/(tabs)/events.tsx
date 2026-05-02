@@ -2,9 +2,9 @@ import WeekCalendar from "@/components/Calendar";
 import EventsCard from "@/components/EventsCard";
 import FAB from "@/components/fabs/EventFab";
 import { useTheme } from "@/context/ThemeContext";
-import { events } from "@/services/Events";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import api from "@/services/api";
+import { useRouter, useFocusEffect } from "expo-router";
+import React, { useState, useCallback } from "react";
 import {
   FlatList,
   StatusBar,
@@ -12,6 +12,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -19,6 +21,33 @@ const Events = () => {
   const [date, setDate] = useState(new Date());
   const router = useRouter();
   const { theme } = useTheme();
+
+  const [eventsData, setEventsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchEvents = async () => {
+    try {
+      const res = await api.getEvents();
+      setEventsData(res.events || []);
+    } catch (err) {
+      console.error("Failed to fetch events", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchEvents();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchEvents();
+  };
 
   return (
     <SafeAreaView
@@ -43,25 +72,37 @@ const Events = () => {
 
       <WeekCalendar date={date} onChange={(newDate) => setDate(newDate)} />
 
-      <View className="py-2">
-        <FlatList
-          showsHorizontalScrollIndicator={false}
-          data={events}
-          renderItem={({ item }) => {
-            return (
-              <EventsCard
-                title={item.title}
-                description={item.description}
-                location={item.locationName}
-                date={item.date}
-                time={item.time}
-                status={item.status}
-                organizer={item.organizer}
-              />
-            );
-          }}
-          keyExtractor={(item) => item.id.toString()}
-        />
+      <View className="flex-1 py-2">
+        {loading ? (
+          <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: 50 }} />
+        ) : (
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={eventsData}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            renderItem={({ item }) => {
+              return (
+                <EventsCard
+                  title={item.title}
+                  description={item.description}
+                  location={item.locationName}
+                  date={item.date}
+                  time={item.time}
+                  status={item.status}
+                  organizer={item.author}
+                />
+              );
+            }}
+            keyExtractor={(item) => item.id.toString()}
+            ListEmptyComponent={() => (
+              <Text style={{ color: theme.textSecondary, textAlign: 'center', marginTop: 50 }}>
+                No events found.
+              </Text>
+            )}
+          />
+        )}
       </View>
 
       <TouchableOpacity

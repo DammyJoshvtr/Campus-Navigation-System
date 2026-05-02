@@ -16,7 +16,6 @@ const TabBarIcon = ({ focused, name, icon, theme }: any) => {
         alignItems: "center",
         justifyContent: "center",
         width: 60,
-        backgroundColor: "red",
       }}
     >
       {/* Icon background */}
@@ -63,13 +62,13 @@ const Layout = () => {
           tabBarItemStyle: {
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "blue",
           },
           tabBarStyle: {
-            height: 90 + insets.bottom,
+            height: 80 + insets.bottom,
             paddingBottom: insets.bottom,
             backgroundColor: theme.surface,
             borderTopColor: theme.border,
+            paddingTop: insets.top
           },
         }}
       >
