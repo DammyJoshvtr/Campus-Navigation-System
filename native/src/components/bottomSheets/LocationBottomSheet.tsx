@@ -10,22 +10,18 @@
  * - "Save" button wired (placeholder — connect to AsyncStorage in your favorites hook)
  */
 
+import { useTheme } from "@/context/ThemeContext";
 import { events } from "@/services/Events";
 import { formatDistance, formatDuration } from "@/services/directionServices";
-import { useTheme } from "@/context/ThemeContext";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import {
-  Clock,
-  MapPin,
-  Navigation,
-  Star,
-} from "lucide-react-native";
-import React, { forwardRef, useCallback, useMemo, useState } from "react";
+import { Clock, MapPin, Navigation, Star } from "lucide-react-native";
+import React, { forwardRef, useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,18 +31,19 @@ import {
 
 type Props = {
   location?: {
-    name:        string;
-    type:        string;
+    name: string;
+    type: string;
+    image: string;
     description?: string;
     coordinate: {
-      latitude:  number;
+      latitude: number;
       longitude: number;
     };
   };
   onGetDirections: (location: any) => void;
   onSaveDirection?: () => void;
-  loading:         boolean;
-  isSaving?:       boolean;
+  loading: boolean;
+  isSaving?: boolean;
   routeInfo?: {
     distance: number;
     duration: number;
@@ -54,7 +51,17 @@ type Props = {
 };
 
 const LocationBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ location, onGetDirections, onSaveDirection, loading, isSaving, routeInfo }, ref) => {
+  (
+    {
+      location,
+      onGetDirections,
+      onSaveDirection,
+      loading,
+      isSaving,
+      routeInfo,
+    },
+    ref,
+  ) => {
     const { theme } = useTheme();
     const snapPoints = useMemo(() => ["30%", "55%"], []);
 
@@ -85,16 +92,25 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
         backgroundStyle={{ backgroundColor: theme.surface }}
         handleIndicatorStyle={{ backgroundColor: theme.border }}
       >
-        <BottomSheetView style={[styles.container, { backgroundColor: theme.surface }]}>
+        <BottomSheetView
+          style={[styles.container, { backgroundColor: theme.surface }]}
+        >
           <ScrollView showsVerticalScrollIndicator={false}>
-
             {/* ── Location name + type ── */}
-            <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
+            <Text
+              style={[styles.name, { color: theme.text }]}
+              numberOfLines={2}
+            >
               {location?.name || "Select a location"}
             </Text>
 
             <View style={styles.typeRow}>
-              <View style={[styles.typeBadge, { backgroundColor: theme.primary + "18" }]}>
+              <View
+                style={[
+                  styles.typeBadge,
+                  { backgroundColor: theme.primary + "18" },
+                ]}
+              >
                 <MapPin size={11} color={theme.primary} />
                 <Text style={[styles.typeText, { color: theme.primary }]}>
                   {location?.type || "Location"}
@@ -104,16 +120,28 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
             {/* ── ETA chips (shows after route is fetched) ── */}
             {routeInfo && (
-              <View style={[styles.etaRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <View
+                style={[
+                  styles.etaRow,
+                  {
+                    backgroundColor: theme.surfaceAlt,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
                 <View style={styles.etaChip}>
                   <Clock size={14} color={theme.primary} />
                   <Text style={[styles.etaValue, { color: theme.primary }]}>
                     {formatDuration(routeInfo.duration)}
                   </Text>
-                  <Text style={[styles.etaUnit, { color: theme.textMuted }]}>walk</Text>
+                  <Text style={[styles.etaUnit, { color: theme.textMuted }]}>
+                    walk
+                  </Text>
                 </View>
 
-                <View style={[styles.etaDivider, { backgroundColor: theme.border }]} />
+                <View
+                  style={[styles.etaDivider, { backgroundColor: theme.border }]}
+                />
 
                 <View style={styles.etaChip}>
                   <MapPin size={14} color={theme.textSecondary} />
@@ -141,14 +169,14 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                 onPress={() => onGetDirections?.(location)}
                 disabled={loading || !location}
               >
-                {loading
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : (
-                    <>
-                      <Navigation size={15} color="#fff" />
-                      <Text style={styles.primaryBtnText}>Get Directions</Text>
-                    </>
-                  )}
+                {loading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <>
+                    <Navigation size={15} color="#fff" />
+                    <Text style={styles.primaryBtnText}>Get Directions</Text>
+                  </>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -156,7 +184,7 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                   styles.secondaryBtn,
                   {
                     backgroundColor: theme.surfaceAlt,
-                    borderColor:     theme.border,
+                    borderColor: theme.border,
                   },
                   isSaving && { opacity: 0.65 },
                 ]}
@@ -164,20 +192,46 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                 disabled={isSaving || !location || !routeInfo}
               >
                 {isSaving ? (
-                   <ActivityIndicator color={theme.primary} size="small" />
+                  <ActivityIndicator color={theme.primary} size="small" />
                 ) : (
                   <>
-                    <Star
-                      size={16}
-                      color={theme.primary}
-                      fill="transparent"
-                    />
-                    <Text style={[styles.secondaryBtnText, { color: theme.primary }]}>
+                    <Star size={16} color={theme.primary} fill="transparent" />
+                    <Text
+                      style={[
+                        styles.secondaryBtnText,
+                        { color: theme.primary },
+                      ]}
+                    >
                       Save
                     </Text>
                   </>
                 )}
               </TouchableOpacity>
+            </View>
+
+            {/* Image */}
+            <View
+              style={{
+                height: 200,
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#eeeeee",
+              }}
+            >
+              {location?.image === "" ? (
+                <Text>No Image</Text>
+              ) : (
+                <Image
+                  src={location?.image}
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                  }}
+                  resizeMode="contain"
+                />
+              )}
             </View>
 
             {/* ── Events at this location ── */}
@@ -190,7 +244,13 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                 {filteredEvents.map((event) => (
                   <View
                     key={event.id}
-                    style={[styles.eventCard, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}
+                    style={[
+                      styles.eventCard,
+                      {
+                        backgroundColor: theme.surfaceAlt,
+                        borderColor: theme.border,
+                      },
+                    ]}
                   >
                     <View style={styles.eventHeader}>
                       <Text style={[styles.eventTitle, { color: theme.text }]}>
@@ -199,24 +259,30 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                       <View
                         style={[
                           styles.statusBadge,
-                          event.status === "ongoing"  && styles.statusOngoing,
+                          event.status === "ongoing" && styles.statusOngoing,
                           event.status === "upcoming" && styles.statusUpcoming,
-                          event.status === "ended"    && styles.statusEnded,
+                          event.status === "ended" && styles.statusEnded,
                         ]}
                       >
                         <Text style={styles.statusText}>{event.status}</Text>
                       </View>
                     </View>
 
-                    <Text style={[styles.eventDesc, { color: theme.textSecondary }]}>
+                    <Text
+                      style={[styles.eventDesc, { color: theme.textSecondary }]}
+                    >
                       {event.description}
                     </Text>
 
-                    <Text style={[styles.eventMeta, { color: theme.textMuted }]}>
+                    <Text
+                      style={[styles.eventMeta, { color: theme.textMuted }]}
+                    >
                       {event.date} · {event.time}
                     </Text>
 
-                    <Text style={[styles.organizer, { color: theme.textMuted }]}>
+                    <Text
+                      style={[styles.organizer, { color: theme.textMuted }]}
+                    >
                       By {event.organizer}
                     </Text>
                   </View>
@@ -236,174 +302,174 @@ export default LocationBottomSheet;
 
 const styles = StyleSheet.create({
   container: {
-    flex:              1,
+    flex: 1,
     paddingHorizontal: 20,
-    paddingTop:        8,
+    paddingTop: 8,
   },
 
   name: {
-    fontSize:     18,
-    fontFamily:   "PlusJakartaSans_700Bold",
+    fontSize: 18,
+    fontFamily: "PlusJakartaSans_700Bold",
     marginBottom: 6,
   },
 
   typeRow: {
     flexDirection: "row",
-    marginBottom:  12,
+    marginBottom: 12,
   },
 
   typeBadge: {
-    flexDirection:    "row",
-    alignItems:       "center",
-    gap:              4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     paddingHorizontal: 10,
-    paddingVertical:   4,
-    borderRadius:      999,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
 
   typeText: {
-    fontSize:   12,
+    fontSize: 12,
     fontFamily: "PlusJakartaSans_600SemiBold",
   },
 
   // ── ETA ──
   etaRow: {
-    flexDirection:  "row",
-    alignItems:     "center",
-    borderRadius:   12,
-    borderWidth:    1,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    marginBottom:   14,
-    gap:            16,
+    marginBottom: 14,
+    gap: 16,
   },
 
   etaChip: {
     flexDirection: "row",
-    alignItems:    "center",
-    gap:           5,
-    flex:          1,
+    alignItems: "center",
+    gap: 5,
+    flex: 1,
   },
 
   etaValue: {
-    fontSize:   15,
+    fontSize: 15,
     fontFamily: "PlusJakartaSans_700Bold",
   },
 
   etaUnit: {
-    fontSize:   12,
+    fontSize: 12,
     fontFamily: "PlusJakartaSans_400Regular",
   },
 
   etaDivider: {
-    width:  1,
+    width: 1,
     height: 20,
   },
 
   description: {
-    fontSize:     14,
-    fontFamily:   "PlusJakartaSans_400Regular",
-    lineHeight:   21,
+    fontSize: 14,
+    fontFamily: "PlusJakartaSans_400Regular",
+    lineHeight: 21,
     marginBottom: 20,
   },
 
   // ── Buttons ──
   actions: {
     flexDirection: "row",
-    gap:           10,
-    marginBottom:  8,
+    gap: 10,
+    marginBottom: 8,
   },
 
   primaryBtn: {
-    flex:           1,
-    flexDirection:  "row",
-    alignItems:     "center",
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
-    gap:            6,
+    gap: 6,
     paddingVertical: 13,
-    borderRadius:   12,
+    borderRadius: 12,
   },
 
   primaryBtnText: {
-    color:      "#fff",
-    fontSize:   15,
+    color: "#fff",
+    fontSize: 15,
     fontFamily: "PlusJakartaSans_700Bold",
   },
 
   secondaryBtn: {
-    flexDirection:  "row",
-    alignItems:     "center",
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
-    gap:            6,
+    gap: 6,
     paddingVertical: 13,
     paddingHorizontal: 18,
-    borderRadius:   12,
-    borderWidth:    1,
+    borderRadius: 12,
+    borderWidth: 1,
   },
 
   secondaryBtnText: {
-    fontSize:   14,
+    fontSize: 14,
     fontFamily: "PlusJakartaSans_600SemiBold",
   },
 
   // ── Events ──
   sectionTitle: {
-    fontSize:     15,
-    fontFamily:   "PlusJakartaSans_700Bold",
+    fontSize: 15,
+    fontFamily: "PlusJakartaSans_700Bold",
     marginBottom: 10,
   },
 
   eventCard: {
-    borderRadius:  12,
-    borderWidth:   1,
-    padding:       14,
-    marginBottom:  10,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 10,
   },
 
   eventHeader: {
-    flexDirection:  "row",
+    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems:     "center",
-    marginBottom:   6,
+    alignItems: "center",
+    marginBottom: 6,
   },
 
   eventTitle: {
-    flex:       1,
-    fontSize:   14,
+    flex: 1,
+    fontSize: 14,
     fontFamily: "PlusJakartaSans_700Bold",
   },
 
   statusBadge: {
     paddingHorizontal: 8,
-    paddingVertical:   3,
-    borderRadius:      999,
+    paddingVertical: 3,
+    borderRadius: 999,
   },
 
   statusText: {
-    fontSize:   10,
+    fontSize: 10,
     fontFamily: "PlusJakartaSans_600SemiBold",
-    color:      "#fff",
+    color: "#fff",
   },
 
-  statusOngoing:  { backgroundColor: "#16A34A" },
+  statusOngoing: { backgroundColor: "#16A34A" },
   statusUpcoming: { backgroundColor: "#2563EB" },
-  statusEnded:    { backgroundColor: "#6B7280" },
+  statusEnded: { backgroundColor: "#6B7280" },
 
   eventDesc: {
-    fontSize:     13,
-    fontFamily:   "PlusJakartaSans_400Regular",
+    fontSize: 13,
+    fontFamily: "PlusJakartaSans_400Regular",
     marginBottom: 6,
-    lineHeight:   19,
+    lineHeight: 19,
   },
 
   eventMeta: {
-    fontSize:     12,
-    fontFamily:   "PlusJakartaSans_500Medium",
+    fontSize: 12,
+    fontFamily: "PlusJakartaSans_500Medium",
     marginBottom: 4,
   },
 
   organizer: {
-    fontSize:   11,
+    fontSize: 11,
     fontFamily: "PlusJakartaSans_400Regular",
   },
 });

@@ -23,7 +23,7 @@ export interface EventData {
 }
 
 const api = {
-  baseUrl: "http://192.168.149.171:5000",
+  baseUrl: `${process.env.EXPO_PUBLIC_API_URL}:5000`,
 };
 
 const authSignup = async (data: SignupData) => {
