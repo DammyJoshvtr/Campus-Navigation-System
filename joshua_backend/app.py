@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_mail import Mail, Message
 
+import json
 import os
 from dotenv import load_dotenv
 
@@ -382,6 +383,20 @@ def get_events():
     except Exception as e:
         cursor.close()
         return jsonify({"message": f"Failed to fetch events: {str(e)}"}), 500
+
+# ==========================================
+# LOCATIONS API
+# ==========================================
+
+@app.route('/api/locations', methods=['GET'])
+def get_locations():
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), 'coordinates.json')
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+        return jsonify(data.get('locations', [])), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to fetch locations: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -22,6 +22,17 @@ export interface EventData {
   author: string;
 }
 
+type Location = {
+  id: number;
+  name: string;
+  coordinate: {
+    latitude: number;
+    longitude: number;
+  };
+  type: string;
+};
+
+
 const api = {
   baseUrl: `${process.env.EXPO_PUBLIC_API_URL}:5000`,
 };
@@ -137,6 +148,16 @@ const getEvents = async () => {
   }
 };
 
+const getLocations = async () => {
+  try {
+    const res = await axios.get(`${api.baseUrl}/api/locations`);
+    return res.data;
+  } catch (err: any) {
+    console.log("Get Locations Error: ", err.response?.data || err.message);
+    throw err;
+  }
+};
+
 export default {
   authSignup,
   authSignin,
@@ -147,4 +168,5 @@ export default {
   deleteDirection,
   createEvent,
   getEvents,
+  getLocations,
 };
