@@ -361,7 +361,7 @@
     {
       "id": 51,
       "image": "http://192.168.169.171:5000/static/images/engineering_boys_hostel.jpeg",
-      "name": "Male Engineering",
+      "name": "Male Engineering Hostel",
       "coordinate": { "latitude": 7.687499, "longitude": 4.44932 },
       "type": "Hostel"
     },
@@ -374,14 +374,14 @@
     },
     {
       "id": 53,
-      "image": "http://192.168.169.171:5000/static/images/sport_complex_two.jpeg",
+      "image": "http://192.168.169.171:5000/static/images/sport_complex.jpeg",
       "name": "Lawn Tennis Court",
       "coordinate": { "latitude": 7.683952, "longitude": 4.458021 },
       "type": "Sports Facility"
     },
     {
       "id": 54,
-      "image": "http://192.168.169.171:5000/static/images/sport_complex.jpeg",
+      "image": "http://192.168.169.171:5000/static/images/sport_complex_two.jpeg",
       "name": "Sports Complex",
       "coordinate": { "latitude": 7.683899, "longitude": 4.457294 },
       "type": "Sports Facility"

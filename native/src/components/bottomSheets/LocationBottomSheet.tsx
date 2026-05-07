@@ -18,7 +18,13 @@ import BottomSheet, {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { Clock, MapPin, Navigation, Star } from "lucide-react-native";
-import React, { forwardRef, useCallback, useMemo } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   Image,
@@ -64,6 +70,12 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
   ) => {
     const { theme } = useTheme();
     const snapPoints = useMemo(() => ["30%", "55%"], []);
+
+    const [imageLoading, setImageLoading] = useState(true);
+
+    useEffect(() => {
+      setImageLoading(true);
+    }, [location?.image]);
 
     const backdrop = useCallback(
       (props: any) => (
@@ -223,14 +235,25 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
               {!location?.image || location?.image.endsWith("/") ? (
                 <Text>No Image</Text>
               ) : (
-                <Image
-                  source={{ uri: location.image }}
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                  }}
-                  resizeMode="cover"
-                />
+                <>
+                  {imageLoading && (
+                    <ActivityIndicator
+                      style={{ position: "absolute" }}
+                      color={theme.primary}
+                      size="large"
+                    />
+                  )}
+                  <Image
+                    source={{ uri: location.image }}
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                    }}
+                    resizeMode="cover"
+                    onLoadStart={() => setImageLoading(true)}
+                    onLoadEnd={() => setImageLoading(false)}
+                  />
+                </>
               )}
             </View>
 
