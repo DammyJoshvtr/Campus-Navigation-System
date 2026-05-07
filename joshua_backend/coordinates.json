@@ -2,7 +2,7 @@
   "locations": [
     {
       "id": 1,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/",
       "name": "21 - 24",
       "coordinate": { "latitude": 7.681964, "longitude": 4.457061 },
       "type": "Lecture Rooms"
@@ -233,7 +233,7 @@
     },
     {
       "id": 33,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/olanipekun_building.jpeg",
       "name": "Chief Olanipekun Hall",
       "coordinate": { "latitude": 7.677611, "longitude": 4.454607 },
       "type": "Event Centre"
@@ -297,7 +297,7 @@
     },
     {
       "id": 42,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/event_center.jpeg",
       "name": "Event Center",
       "coordinate": { "latitude": 7.686409, "longitude": 4.456671 },
       "type": "Event Centre"
@@ -311,7 +311,7 @@
     },
     {
       "id": 44,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/engineering_faculty.jpeg",
       "name": "Engineering Faculty",
       "coordinate": { "latitude": 7.680707, "longitude": 4.446139 },
       "type": "Faculty"
@@ -339,14 +339,14 @@
     },
     {
       "id": 48,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/faculty_of_law.jpeg",
       "name": "Faculty of Law",
       "coordinate": { "latitude": 7.683341, "longitude": 4.445949 },
       "type": "Faculty"
     },
     {
       "id": 49,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/mew_era.jpeg",
       "name": "New Era Cafeteria",
       "coordinate": { "latitude": 7.684897, "longitude": 4.445171 },
       "type": "Food & Dining"
@@ -360,28 +360,28 @@
     },
     {
       "id": 51,
-      "image": "",
-      "name": "Male Engineering Cafeteria",
+      "image": "http://192.168.173.171:5000/static/images/engineering_boys_hostel",
+      "name": "Male Engineering",
       "coordinate": { "latitude": 7.687499, "longitude": 4.44932 },
-      "type": "Food & Dining"
+      "type": "Hostel"
     },
     {
       "id": 52,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/fire_service.jpeg",
       "name": "RUN Fire Service Building",
       "coordinate": { "latitude": 7.683681, "longitude": 4.450812 },
       "type": "Administrative"
     },
     {
       "id": 53,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/sport_complex_two",
       "name": "Lawn Tennis Court",
       "coordinate": { "latitude": 7.683952, "longitude": 4.458021 },
       "type": "Sports Facility"
     },
     {
       "id": 54,
-      "image": "",
+      "image": "http://192.168.173.171:5000/static/images/sport_complex.jpeg",
       "name": "Sports Complex",
       "coordinate": { "latitude": 7.683899, "longitude": 4.457294 },
       "type": "Sports Facility"
