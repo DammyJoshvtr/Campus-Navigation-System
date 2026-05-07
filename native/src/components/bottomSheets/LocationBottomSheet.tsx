@@ -33,7 +33,7 @@ type Props = {
   location?: {
     name: string;
     type: string;
-    image: string;
+    image?: string;
     description?: string;
     coordinate: {
       latitude: number;
@@ -220,16 +220,16 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                 backgroundColor: "#eeeeee",
               }}
             >
-              {location?.image === "" ? (
+              {!location?.image || location?.image.endsWith("/") ? (
                 <Text>No Image</Text>
               ) : (
                 <Image
-                  src={location?.image}
+                  source={{ uri: location.image }}
                   style={{
                     height: "100%",
                     width: "100%",
                   }}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
               )}
             </View>

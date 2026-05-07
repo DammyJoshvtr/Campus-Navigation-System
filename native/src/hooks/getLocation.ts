@@ -9,6 +9,7 @@ type Location = {
     longitude: number;
   };
   type: string;
+  image?: string;
 };
 
 const useLocations = () => {
