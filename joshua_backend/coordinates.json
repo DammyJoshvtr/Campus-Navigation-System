@@ -2,7 +2,7 @@
   "locations": [
     {
       "id": 1,
-      "image": "http://192.168.169.171:5000/static/images/",
+      "image": "",
       "name": "21 - 24",
       "coordinate": { "latitude": 7.681964, "longitude": 4.457061 },
       "type": "Lecture Rooms"
