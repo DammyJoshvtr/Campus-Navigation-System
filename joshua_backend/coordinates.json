@@ -385,6 +385,20 @@
       "name": "Sports Complex",
       "coordinate": { "latitude": 7.683899, "longitude": 4.457294 },
       "type": "Sports Facility"
+    },
+    {
+      "id": 55,
+      "image": "",
+      "name": "Seeding Laboratory",
+      "coordinate": {"latitude": 7.684900, "longitude": 4.451528 },
+      "type": "Laboratory"
+    },
+    {
+      "id": 56,
+      "image": "",
+      "name": "Tourism Village",
+      "coordinate": {"latitude": 7.681743, "longitude": 4.456536 },
+      "type": "Event Centre"
     }
   ]
 }
