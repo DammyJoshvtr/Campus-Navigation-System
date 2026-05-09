@@ -201,7 +201,7 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                   isSaving && { opacity: 0.65 },
                 ]}
                 onPress={() => onSaveDirection?.()}
-                disabled={isSaving || !location || !routeInfo}
+                disabled={isSaving || !location}
               >
                 {isSaving ? (
                   <ActivityIndicator color={theme.primary} size="small" />
