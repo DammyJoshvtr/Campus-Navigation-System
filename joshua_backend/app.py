@@ -1,10 +1,13 @@
 import random
 import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, url_for
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_mail import Mail, Message
+import jwt
+from werkzeug.utils import secure_filename
+from functools import wraps
 
 import json
 import os
@@ -30,6 +33,11 @@ app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
 app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_DEFAULT_SENDER")
 
+# Upload Config
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'static', 'images')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
 mail = Mail(app)
@@ -50,9 +58,61 @@ def send_otp_email(to_email, otp):
         print(f"Failed to send email: {e}")
         return False
 
+# JWT Decorators
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1] if "Bearer " in request.headers['Authorization'] else request.headers['Authorization']
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        try:
+            data = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+            current_user = data
+        except Exception as e:
+            return jsonify({'message': 'Token is invalid!', 'error': str(e)}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1] if "Bearer " in request.headers['Authorization'] else request.headers['Authorization']
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        try:
+            data = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+            if data.get('role') != 'admin':
+                return jsonify({'message': 'Admin privileges required!'}), 403
+            current_user = data
+        except Exception as e:
+            return jsonify({'message': 'Token is invalid!', 'error': str(e)}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
 @app.route('/')
 def index():
     return jsonify({"message": "Joshua Backend API running"})
+
+@app.route('/api/upload', methods=['POST'])
+@admin_required
+def upload_file(current_user):
+    if 'image' not in request.files:
+        return jsonify({"message": "No image part"}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"message": "No selected file"}), 400
+    if file:
+        filename = secure_filename(file.filename)
+        # add timestamp to prevent collisions
+        import time
+        filename = f"{int(time.time())}_{filename}"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        url = url_for('static', filename='images/' + filename, _external=True)
+        return jsonify({"message": "File uploaded successfully", "url": url}), 200
 
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
@@ -77,7 +137,6 @@ def signup():
             cursor.close()
             return jsonify({"message": "Email already exists"}), 409
         else:
-            # User exists but is not verified. Resend OTP and update password/name.
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
             otp = generate_otp()
             expires_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
@@ -113,7 +172,6 @@ def signup():
     
     cursor.close()
 
-    # Send OTP
     send_otp_email(email, otp)
 
     return jsonify({"message": "User created. Please check your email for the OTP.", "email": email}), 201
@@ -128,14 +186,24 @@ def verify_otp():
         return jsonify({"message": "Email and OTP are required"}), 400
 
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
-    user = cursor.fetchone()
+    
+    try:
+        cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at, role FROM users WHERE email = %s', (email,))
+        user = cursor.fetchone()
+    except:
+        # fallback if role column doesn't exist yet
+        cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
+        user_no_role = cursor.fetchone()
+        if user_no_role:
+            user = (*user_no_role, 'user')
+        else:
+            user = None
 
     if not user:
         cursor.close()
         return jsonify({"message": "User not found"}), 404
 
-    user_id, name, is_verified, db_otp, expires_at = user
+    user_id, name, is_verified, db_otp, expires_at, role = user
 
     if is_verified:
         cursor.close()
@@ -149,15 +217,21 @@ def verify_otp():
         cursor.close()
         return jsonify({"message": "OTP has expired"}), 400
 
-    # Mark as verified
     cursor.execute('UPDATE users SET is_verified = True, otp_code = NULL WHERE id = %s', (user_id,))
     mysql.connection.commit()
     cursor.close()
 
-    # Provide token or session here if needed, for now just success
+    token = jwt.encode({
+        'id': user_id,
+        'email': email,
+        'role': role,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    }, app.secret_key, algorithm="HS256")
+
     return jsonify({
         "message": "Email verified successfully",
-        "user": {"id": user_id, "name": name, "email": email}
+        "user": {"id": user_id, "name": name, "email": email, "role": role},
+        "token": token
     }), 200
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -170,14 +244,22 @@ def login():
         return jsonify({"message": "Email and password are required"}), 400
 
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT id, name, email, password, is_verified FROM users WHERE email = %s', (email,))
-    user_data = cursor.fetchone()
+    try:
+        cursor.execute('SELECT id, name, email, password, is_verified, role FROM users WHERE email = %s', (email,))
+        user_data = cursor.fetchone()
+    except:
+        cursor.execute('SELECT id, name, email, password, is_verified FROM users WHERE email = %s', (email,))
+        u = cursor.fetchone()
+        if u:
+            user_data = (*u, 'user')
+        else:
+            user_data = None
     cursor.close()
 
     if not user_data:
         return jsonify({"message": "Invalid credentials"}), 401
 
-    db_id, db_name, db_email, db_password, is_verified = user_data
+    db_id, db_name, db_email, db_password, is_verified, role = user_data
 
     if not bcrypt.check_password_hash(db_password, password):
         return jsonify({"message": "Invalid credentials"}), 401
@@ -192,11 +274,17 @@ def login():
         send_otp_email(db_email, otp)
         return jsonify({"message": "Email not verified. A new OTP has been sent. Please verify your OTP."}), 403
 
-    # For a real API, return a JWT token. Since the original relied on flask_login, 
-    # we'll just return a success message and user object to satisfy the frontend.
+    token = jwt.encode({
+        'id': db_id,
+        'email': db_email,
+        'role': role,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    }, app.secret_key, algorithm="HS256")
+
     return jsonify({
         "message": "Login successful",
-        "user": {"id": db_id, "name": db_name, "email": db_email}
+        "user": {"id": db_id, "name": db_name, "email": db_email, "role": role},
+        "token": token
     }), 200
 
 @app.route('/api/auth/resend-otp', methods=['POST'])
@@ -341,26 +429,44 @@ def create_event():
     try:
         cursor.execute('''
             INSERT INTO events 
-            (title, description, locationName, date, time, status, image, author)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            (title, description, locationName, date, time, status, image, author, approval_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'pending')
         ''', (title, description, locationName, date, time, status, image, author))
         mysql.connection.commit()
         event_id = cursor.lastrowid
         cursor.close()
         return jsonify({"message": "Event created successfully", "id": event_id}), 201
     except Exception as e:
-        cursor.close()
-        return jsonify({"message": f"Failed to create event: {str(e)}"}), 500
+        # Fallback if approval_status is not yet added
+        try:
+            cursor.execute('''
+                INSERT INTO events 
+                (title, description, locationName, date, time, status, image, author)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ''', (title, description, locationName, date, time, status, image, author))
+            mysql.connection.commit()
+            event_id = cursor.lastrowid
+            cursor.close()
+            return jsonify({"message": "Event created successfully", "id": event_id}), 201
+        except Exception as e2:
+            cursor.close()
+            return jsonify({"message": f"Failed to create event: {str(e2)}"}), 500
 
 @app.route('/api/events', methods=['GET'])
 def get_events():
+    all_events = request.args.get('all') == 'true'
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute('''
-            SELECT id, title, description, locationName, date, time, status, image, author, created_at
-            FROM events
-            ORDER BY created_at DESC
-        ''')
+        if all_events:
+            cursor.execute('''
+                SELECT id, title, description, locationName, date, time, status, image, author, created_at, approval_status
+                FROM events ORDER BY created_at DESC
+            ''')
+        else:
+            cursor.execute('''
+                SELECT id, title, description, locationName, date, time, status, image, author, created_at, approval_status
+                FROM events WHERE approval_status = 'approved' ORDER BY created_at DESC
+            ''')
         rows = cursor.fetchall()
         cursor.close()
         
@@ -376,13 +482,68 @@ def get_events():
                 "status": row[6],
                 "image": row[7],
                 "author": row[8],
-                "created_at": str(row[9])
+                "created_at": str(row[9]),
+                "approval_status": row[10]
             })
             
         return jsonify({"events": events_list}), 200
     except Exception as e:
+        # Fallback if approval_status not in db yet
+        try:
+            cursor = mysql.connection.cursor()
+            cursor.execute('''
+                SELECT id, title, description, locationName, date, time, status, image, author, created_at
+                FROM events ORDER BY created_at DESC
+            ''')
+            rows = cursor.fetchall()
+            events_list = []
+            for row in rows:
+                events_list.append({
+                    "id": row[0],
+                    "title": row[1],
+                    "description": row[2],
+                    "locationName": row[3],
+                    "date": row[4],
+                    "time": row[5],
+                    "status": row[6],
+                    "image": row[7],
+                    "author": row[8],
+                    "created_at": str(row[9]),
+                    "approval_status": 'approved'
+                })
+            return jsonify({"events": events_list}), 200
+        except Exception as e2:
+            cursor.close()
+            return jsonify({"message": f"Failed to fetch events: {str(e2)}"}), 500
+
+@app.route('/api/events/<int:id>', methods=['DELETE'])
+@admin_required
+def delete_event(current_user, id):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('DELETE FROM events WHERE id = %s', (id,))
+        mysql.connection.commit()
         cursor.close()
-        return jsonify({"message": f"Failed to fetch events: {str(e)}"}), 500
+        return jsonify({"message": "Event deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to delete event: {str(e)}"}), 500
+
+@app.route('/api/events/<int:id>', methods=['PUT'])
+@admin_required
+def update_event(current_user, id):
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            UPDATE events 
+            SET title=%s, description=%s, locationName=%s, date=%s, time=%s, status=%s, image=%s
+            WHERE id=%s
+        ''', (data.get('title'), data.get('description'), data.get('locationName'), data.get('date'), data.get('time'), data.get('status'), data.get('image'), id))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Event updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to update event: {str(e)}"}), 500
 
 # ==========================================
 # LOCATIONS API
@@ -390,13 +551,147 @@ def get_events():
 
 @app.route('/api/locations', methods=['GET'])
 def get_locations():
+    all_locations = request.args.get('all') == 'true'
+    cursor = mysql.connection.cursor()
     try:
-        file_path = os.path.join(os.path.dirname(__file__), 'coordinates.json')
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-        return jsonify(data.get('locations', [])), 200
+        if all_locations:
+            cursor.execute('SELECT id, name, type, latitude, longitude, image, description, approval_status FROM locations')
+        else:
+            cursor.execute("SELECT id, name, type, latitude, longitude, image, description, approval_status FROM locations WHERE approval_status = 'approved'")
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        locations_list = []
+        for row in rows:
+            locations_list.append({
+                "id": row[0],
+                "name": row[1],
+                "type": row[2],
+                "coordinate": {
+                    "latitude": row[3],
+                    "longitude": row[4]
+                },
+                "image": row[5],
+                "description": row[6],
+                "approval_status": row[7]
+            })
+            
+        return jsonify(locations_list), 200
     except Exception as e:
-        return jsonify({"message": f"Failed to fetch locations: {str(e)}"}), 500
+        # Fallback to coordinates.json if DB not migrated
+        try:
+            file_path = os.path.join(os.path.dirname(__file__), 'coordinates.json')
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+            return jsonify(data.get('locations', [])), 200
+        except Exception as e2:
+            return jsonify({"message": f"Failed to fetch locations: {str(e)}"}), 500
+
+@app.route('/api/locations', methods=['POST'])
+@admin_required
+def create_location(current_user):
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO locations (name, type, latitude, longitude, image, description, approval_status)
+            VALUES (%s, %s, %s, %s, %s, %s, 'approved')
+        ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description')))
+        mysql.connection.commit()
+        loc_id = cursor.lastrowid
+        cursor.close()
+        return jsonify({"message": "Location created successfully", "id": loc_id}), 201
+    except Exception as e:
+        return jsonify({"message": f"Failed to create location: {str(e)}"}), 500
+
+@app.route('/api/locations/<int:id>', methods=['PUT'])
+@admin_required
+def update_location(current_user, id):
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            UPDATE locations 
+            SET name=%s, type=%s, latitude=%s, longitude=%s, image=%s, description=%s
+            WHERE id=%s
+        ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description'), id))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Location updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to update location: {str(e)}"}), 500
+
+@app.route('/api/locations/<int:id>', methods=['DELETE'])
+@admin_required
+def delete_location(current_user, id):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('DELETE FROM locations WHERE id = %s', (id,))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Location deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to delete location: {str(e)}"}), 500
+
+# ==========================================
+# ADMIN API (USERS & APPROVALS)
+# ==========================================
+
+@app.route('/api/users', methods=['GET'])
+@admin_required
+def get_users(current_user):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('SELECT id, name, email, is_verified, role FROM users')
+        rows = cursor.fetchall()
+        cursor.close()
+        users = []
+        for row in rows:
+            users.append({
+                "id": row[0],
+                "name": row[1],
+                "email": row[2],
+                "is_verified": bool(row[3]),
+                "role": row[4]
+            })
+        return jsonify(users), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to fetch users: {str(e)}"}), 500
+
+@app.route('/api/users/<int:id>', methods=['DELETE'])
+@admin_required
+def delete_user(current_user, id):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('DELETE FROM users WHERE id = %s', (id,))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "User deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to delete user: {str(e)}"}), 500
+
+@app.route('/api/admin/approve/<content_type>/<int:id>', methods=['PUT'])
+@admin_required
+def approve_content(current_user, content_type, id):
+    data = request.get_json()
+    status = data.get('status')
+    if status not in ['approved', 'rejected', 'pending']:
+        return jsonify({"message": "Invalid status"}), 400
+    
+    cursor = mysql.connection.cursor()
+    try:
+        if content_type == 'event':
+            cursor.execute("UPDATE events SET approval_status = %s WHERE id = %s", (status, id))
+        elif content_type == 'location':
+            cursor.execute("UPDATE locations SET approval_status = %s WHERE id = %s", (status, id))
+        else:
+            return jsonify({"message": "Invalid content type"}), 400
+        
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": f"{content_type.capitalize()} status updated to {status}"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to update status: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
