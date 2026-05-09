@@ -670,6 +670,28 @@ def delete_user(current_user, id):
     except Exception as e:
         return jsonify({"message": f"Failed to delete user: {str(e)}"}), 500
 
+@app.route('/api/users/<int:id>/role', methods=['PUT'])
+@admin_required
+def update_user_role(current_user, id):
+    data = request.get_json()
+    new_role = data.get('role')
+    
+    if new_role not in ['admin', 'user']:
+        return jsonify({"message": "Invalid role specified"}), 400
+
+    # Prevent admin from changing their own role to prevent lockout
+    if current_user.get('id') == id:
+        return jsonify({"message": "You cannot change your own role"}), 400
+
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute("UPDATE users SET role = %s WHERE id = %s", (new_role, id))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": f"User role updated to {new_role}"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to update role: {str(e)}"}), 500
+
 @app.route('/api/admin/approve/<content_type>/<int:id>', methods=['PUT'])
 @admin_required
 def approve_content(current_user, content_type, id):

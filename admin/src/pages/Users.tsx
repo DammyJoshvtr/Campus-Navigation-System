@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, deleteUser } from '../services/api';
-import { Trash2, Loader2, UserCircle, Search, Shield, ShieldAlert } from 'lucide-react';
+import { getUsers, deleteUser, updateUserRole, User } from '../services/api';
+import { Trash2, Loader2, UserCircle, Search, Shield, ShieldAlert, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
 const Users = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -22,7 +22,7 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
       try {
         await deleteUser(id);
@@ -30,6 +30,19 @@ const Users = () => {
       } catch (error) {
         console.error("Failed to delete", error);
         alert("Failed to delete user");
+      }
+    }
+  };
+
+  const handleRoleChange = async (id: number, currentRole: string) => {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    if (window.confirm(`Are you sure you want to make this user an ${newRole}?`)) {
+      try {
+        await updateUserRole(id, newRole);
+        fetchUsers();
+      } catch (error: any) {
+        console.error("Failed to update role", error);
+        alert(error.response?.data?.message || "Failed to update user role");
       }
     }
   };
@@ -83,7 +96,7 @@ const Users = () => {
             <tbody className="divide-y divide-slate-100">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
                     {searchTerm ? 'No users found matching search.' : 'No users registered yet.'}
                   </td>
                 </tr>
@@ -123,14 +136,25 @@ const Users = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    <button
+                      onClick={() => handleRoleChange(user.id, user.role)}
+                      className={`p-2 rounded-lg transition-colors flex items-center ${
+                        user.role === 'admin' 
+                        ? 'text-amber-600 hover:bg-amber-50' 
+                        : 'text-emerald-600 hover:bg-emerald-50'
+                      }`}
+                      title={user.role === 'admin' ? "Demote to User" : "Promote to Admin"}
+                    >
+                      {user.role === 'admin' ? <ArrowDownCircle className="h-4 w-4" /> : <ArrowUpCircle className="h-4 w-4" />}
+                    </button>
                     <button
                       onClick={() => handleDelete(user.id)}
-                      disabled={user.role === 'admin'} // Prevent deleting other admins or self easily
+                      disabled={user.role === 'admin'} 
                       className={`p-2 rounded-lg transition-colors ${
                         user.role === 'admin' 
                         ? 'text-slate-300 cursor-not-allowed' 
-                        : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                        : 'text-red-600 hover:bg-red-50'
                       }`}
                       title={user.role === 'admin' ? "Cannot delete admin" : "Delete"}
                     >
