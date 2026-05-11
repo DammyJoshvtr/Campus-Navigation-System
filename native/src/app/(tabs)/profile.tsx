@@ -13,6 +13,7 @@
 import { useTheme } from "@/context/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import api from "@/services/api";
 import {
   BookOpen,
   ChevronRight,
@@ -46,6 +47,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ProfileData {
+  id?: number;
   name: string;
   email: string;
   studentId: string;
@@ -167,15 +169,39 @@ export default function Profile() {
 
   const router = useRouter();
 
+  const [stats, setStats] = useState({ routes: 0, saved: 0, events: 0 });
+
+  const fetchStats = async (id: number, token: string) => {
+    try {
+      const data = await api.getUserStats(id, token);
+      setStats({
+        routes: data.routes || 0,
+        saved: data.saved || 0,
+        events: data.events || 0
+      });
+    } catch (e) {
+      console.log("Failed to load stats", e);
+    }
+  };
+
   // Load saved profile
   useEffect(() => {
-    AsyncStorage.getItem(PROFILE_KEY).then((raw) => {
+    const loadData = async () => {
+      const raw = await AsyncStorage.getItem(PROFILE_KEY);
       if (raw) {
         try {
-          setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(raw) });
+          const parsed = JSON.parse(raw);
+          setProfile({ ...DEFAULT_PROFILE, ...parsed });
+          
+          const token = await AsyncStorage.getItem("@campus_token");
+          if (parsed.id && token) {
+            fetchStats(parsed.id, token);
+          }
         } catch {}
       }
-    });
+    };
+    loadData();
+    
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 400,
@@ -192,10 +218,21 @@ export default function Profile() {
 
   const saveProfile = async () => {
     setSaving(true);
-    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(draft));
-    setProfile(draft);
-    setSaving(false);
-    setEditing(false);
+    try {
+      if (draft.id) {
+        const token = await AsyncStorage.getItem("@campus_token");
+        if (token) {
+          await api.updateProfile(draft.id, draft, token);
+        }
+      }
+      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(draft));
+      setProfile(draft);
+      setEditing(false);
+    } catch (e: any) {
+      Alert.alert("Error", e.response?.data?.message || "Failed to update profile.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -208,6 +245,7 @@ export default function Profile() {
           // Clear session and profile, then navigate to index
           await AsyncStorage.removeItem("@campus_session");
           await AsyncStorage.removeItem("@campus_profile");
+          await AsyncStorage.removeItem("@campus_token");
           router.replace("/");
         },
       },
@@ -293,9 +331,9 @@ export default function Profile() {
           {/* ── Stats row ─────────────────────────────────────────────── */}
           <View style={styles.statsRow}>
             {[
-              { label: "Routes", value: "12" },
-              { label: "Saved", value: "5" },
-              { label: "Events", value: "3" },
+              { label: "Routes", value: stats.routes.toString() },
+              { label: "Saved", value: stats.saved.toString() },
+              { label: "Events", value: stats.events.toString() },
             ].map((s, i) => (
               <React.Fragment key={s.label}>
                 <View style={styles.stat}>

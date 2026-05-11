@@ -189,14 +189,14 @@ def verify_otp():
     cursor = mysql.connection.cursor()
     
     try:
-        cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at, role FROM users WHERE email = %s', (email,))
+        cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at, role, student_id, faculty, level FROM users WHERE email = %s', (email,))
         user = cursor.fetchone()
     except:
-        # fallback if role column doesn't exist yet
+        # fallback if new columns don't exist yet
         cursor.execute('SELECT id, name, is_verified, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
         user_no_role = cursor.fetchone()
         if user_no_role:
-            user = (*user_no_role, 'user')
+            user = (*user_no_role, 'user', '', '', '')
         else:
             user = None
 
@@ -204,7 +204,7 @@ def verify_otp():
         cursor.close()
         return jsonify({"message": "User not found"}), 404
 
-    user_id, name, is_verified, db_otp, expires_at, role = user
+    user_id, name, is_verified, db_otp, expires_at, role, student_id, faculty, level = user
 
     if is_verified:
         cursor.close()
@@ -231,7 +231,10 @@ def verify_otp():
 
     return jsonify({
         "message": "Email verified successfully",
-        "user": {"id": user_id, "name": name, "email": email, "role": role},
+        "user": {
+            "id": user_id, "name": name, "email": email, "role": role,
+            "studentId": student_id, "faculty": faculty, "level": level
+        },
         "token": token
     }), 200
 
@@ -246,13 +249,13 @@ def login():
 
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute('SELECT id, name, email, password, is_verified, role FROM users WHERE email = %s', (email,))
+        cursor.execute('SELECT id, name, email, password, is_verified, role, student_id, faculty, level FROM users WHERE email = %s', (email,))
         user_data = cursor.fetchone()
     except:
         cursor.execute('SELECT id, name, email, password, is_verified FROM users WHERE email = %s', (email,))
         u = cursor.fetchone()
         if u:
-            user_data = (*u, 'user')
+            user_data = (*u, 'user', '', '', '')
         else:
             user_data = None
     cursor.close()
@@ -260,7 +263,7 @@ def login():
     if not user_data:
         return jsonify({"message": "Invalid credentials"}), 401
 
-    db_id, db_name, db_email, db_password, is_verified, role = user_data
+    db_id, db_name, db_email, db_password, is_verified, role, student_id, faculty, level = user_data
 
     if not bcrypt.check_password_hash(db_password, password):
         return jsonify({"message": "Invalid credentials"}), 401
@@ -284,7 +287,10 @@ def login():
 
     return jsonify({
         "message": "Login successful",
-        "user": {"id": db_id, "name": db_name, "email": db_email, "role": role},
+        "user": {
+            "id": db_id, "name": db_name, "email": db_email, "role": role,
+            "studentId": student_id, "faculty": faculty, "level": level
+        },
         "token": token
     }), 200
 
@@ -715,6 +721,55 @@ def approve_content(current_user, content_type, id):
         return jsonify({"message": f"{content_type.capitalize()} status updated to {status}"}), 200
     except Exception as e:
         return jsonify({"message": f"Failed to update status: {str(e)}"}), 500
+
+@app.route('/api/users/<int:id>/profile', methods=['PUT'])
+@token_required
+def update_user_profile(current_user, id):
+    if current_user.get('id') != id and current_user.get('role') != 'admin':
+        return jsonify({"message": "Unauthorized"}), 403
+        
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            UPDATE users 
+            SET name=%s, student_id=%s, faculty=%s, level=%s
+            WHERE id=%s
+        ''', (data.get('name'), data.get('studentId'), data.get('faculty'), data.get('level'), id))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Profile updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to update profile: {str(e)}"}), 500
+
+@app.route('/api/users/<int:id>/stats', methods=['GET'])
+@token_required
+def get_user_stats(current_user, id):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute("SELECT name FROM users WHERE id = %s", (id,))
+        user_row = cursor.fetchone()
+        if not user_row:
+            return jsonify({"message": "User not found"}), 404
+            
+        user_name = user_row[0]
+        
+        # Count saved directions
+        cursor.execute("SELECT COUNT(*) FROM saved_directions WHERE user_id = %s", (id,))
+        routes_count = cursor.fetchone()[0]
+        
+        # Count events authored
+        cursor.execute("SELECT COUNT(*) FROM events WHERE author = %s", (user_name,))
+        events_count = cursor.fetchone()[0]
+        
+        cursor.close()
+        return jsonify({
+            "routes": routes_count,
+            "saved": 0, # Placeholder since we don't have a saved places table
+            "events": events_count
+        }), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to fetch stats: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -36,14 +36,17 @@ const VerifyEmail = () => {
           id: res.user.id || null,
           name: res.user.name || "",
           email: res.user.email || "",
-          studentId: "",
-          faculty: "",
-          level: ""
+          studentId: res.user.studentId || "",
+          faculty: res.user.faculty || "",
+          level: res.user.level || ""
         };
         
         try {
           await AsyncStorage.setItem("@campus_profile", JSON.stringify(profileData));
           await AsyncStorage.setItem("@campus_session", "true");
+          if (res.token) {
+            await AsyncStorage.setItem("@campus_token", res.token);
+          }
         } catch (e) {
           console.log("Failed to save profile on verify", e);
         }
