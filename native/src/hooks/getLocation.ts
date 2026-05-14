@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import api from "../services/api";
 
 type Location = {
   id: number;
@@ -8,6 +9,7 @@ type Location = {
     longitude: number;
   };
   type: string;
+  image?: string;
 };
 
 const useLocations = () => {
@@ -15,20 +17,12 @@ const useLocations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const apiUrl = "http://192.168.149.171:3000/locations";
-
   const fetchLocations = useCallback(async () => {
     try {
       setLoading(true);
       setError(false); // reset error before retry
 
-      const response = await fetch(apiUrl);
-
-      if (!response.ok) {
-        throw new Error("Network response failed");
-      }
-
-      const data = await response.json();
+      const data = await api.getLocations();
 
       console.log("Location data is Active...");
       setCoords(data);

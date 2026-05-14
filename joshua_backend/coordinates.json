@@ -2,36 +2,42 @@
   "locations": [
     {
       "id": 1,
+      "image": "",
       "name": "21 - 24",
       "coordinate": { "latitude": 7.681964, "longitude": 4.457061 },
       "type": "Lecture Rooms"
     },
     {
       "id": 2,
+      "image": "",
       "name": "17 - 20",
       "coordinate": { "latitude": 7.682052, "longitude": 4.457355 },
       "type": "Lecture Rooms"
     },
     {
       "id": 3,
+      "image": "",
       "name": "13 - 16",
       "coordinate": { "latitude": 7.682099, "longitude": 4.45753 },
       "type": "Lecture Rooms"
     },
     {
       "id": 4,
+      "image": "",
       "name": "9 - 12",
       "coordinate": { "latitude": 7.682193, "longitude": 4.458001 },
       "type": "Lecture Rooms"
     },
     {
       "id": 5,
+      "image": "",
       "name": "5 - 8",
       "coordinate": { "latitude": 7.682285, "longitude": 4.458214 },
       "type": "Lecture Rooms"
     },
     {
       "id": 6,
+      "image": "",
       "name": "1 - 4",
       "coordinate": { "latitude": 7.68231, "longitude": 4.458472 },
       "type": "Lecture Rooms"
@@ -39,24 +45,28 @@
 
     {
       "id": 7,
+      "image": "",
       "name": "Computing and Digital Tech Office",
       "coordinate": { "latitude": 7.682476, "longitude": 4.458616 },
       "type": "Faculty"
     },
     {
       "id": 8,
+      "image": "",
       "name": "Postgraduate College",
       "coordinate": { "latitude": 7.682094, "longitude": 4.458695 },
       "type": "Faculty"
     },
     {
       "id": 9,
+      "image": "",
       "name": "NLT",
       "coordinate": { "latitude": 7.682003, "longitude": 4.458507 },
       "type": "Lecture Rooms"
     },
     {
       "id": 10,
+      "image": "",
       "name": "MLT",
       "coordinate": { "latitude": 7.681943, "longitude": 4.458076 },
       "type": "Lecture Rooms"
@@ -64,18 +74,21 @@
 
     {
       "id": 11,
+      "image": "",
       "name": "ICT Lab 2",
       "coordinate": { "latitude": 7.681886, "longitude": 4.457794 },
       "type": "Laboratory"
     },
     {
       "id": 12,
+      "image": "",
       "name": "ICT Lab 1",
       "coordinate": { "latitude": 7.681784, "longitude": 4.457469 },
       "type": "Laboratory"
     },
     {
       "id": 13,
+      "image": "",
       "name": "Boja Theatre Art",
       "coordinate": { "latitude": 7.681695, "longitude": 4.457152 },
       "type": "Lecture Rooms"
@@ -83,24 +96,28 @@
 
     {
       "id": 14,
+      "image": "",
       "name": "Zenith ICT ATM",
       "coordinate": { "latitude": 7.680956, "longitude": 4.456225 },
       "type": "Shopping"
     },
     {
       "id": 15,
+      "image": "",
       "name": "Former Faculty of Management Science",
       "coordinate": { "latitude": 7.681419, "longitude": 4.457116 },
       "type": "Faculty"
     },
     {
       "id": 16,
+      "image": "",
       "name": "Building near Peace Park",
       "coordinate": { "latitude": 7.680455, "longitude": 4.457356 },
       "type": "Administrative"
     },
     {
       "id": 17,
+      "image": "",
       "name": "Faculty of Social Sciences",
       "coordinate": { "latitude": 7.680592, "longitude": 4.457779 },
       "type": "Faculty"
@@ -108,24 +125,28 @@
 
     {
       "id": 18,
+      "image": "",
       "name": "Tekena Tamuno Library",
       "coordinate": { "latitude": 7.681147, "longitude": 4.458117 },
       "type": "Library"
     },
     {
       "id": 19,
+      "image": "",
       "name": "Former Natural Science Faculty",
       "coordinate": { "latitude": 7.681247, "longitude": 4.458603 },
       "type": "Faculty"
     },
     {
       "id": 20,
+      "image": "",
       "name": "Bursar / General Studies Office",
       "coordinate": { "latitude": 7.680831, "longitude": 4.458734 },
       "type": "Administrative"
     },
     {
       "id": 21,
+      "image": "",
       "name": "Registrar Office",
       "coordinate": { "latitude": 7.680941, "longitude": 4.459156 },
       "type": "Administrative"
@@ -133,24 +154,28 @@
 
     {
       "id": 22,
+      "image": "",
       "name": "University Auditorium",
       "coordinate": { "latitude": 7.680313, "longitude": 4.459676 },
       "type": "Event Centre"
     },
     {
       "id": 23,
+      "image": "",
       "name": "Staff Cooperative",
       "coordinate": { "latitude": 7.678934, "longitude": 4.459755 },
       "type": "Shopping"
     },
     {
       "id": 24,
+      "image": "",
       "name": "Nursery & Primary School",
       "coordinate": { "latitude": 7.678966, "longitude": 4.459279 },
       "type": "School"
     },
     {
       "id": 25,
+      "image": "",
       "name": "Gethsemane Garden",
       "coordinate": { "latitude": 7.679889, "longitude": 4.459026 },
       "type": "Recreation"
@@ -158,24 +183,28 @@
 
     {
       "id": 26,
+      "image": "",
       "name": "Vice Chancellor Office",
       "coordinate": { "latitude": 7.680338, "longitude": 4.458345 },
       "type": "Administrative"
     },
     {
       "id": 27,
+      "image": "",
       "name": "Peace Park",
       "coordinate": { "latitude": 7.680013, "longitude": 4.456955 },
       "type": "Recreation"
     },
     {
       "id": 28,
+      "image": "",
       "name": "Container",
       "coordinate": { "latitude": 7.679519, "longitude": 4.456491 },
       "type": "Shopping"
     },
     {
       "id": 29,
+      "image": "",
       "name": "Manna Palace",
       "coordinate": { "latitude": 7.678753, "longitude": 4.456962 },
       "type": "Food & Dining"
@@ -183,24 +212,28 @@
 
     {
       "id": 30,
+      "image": "",
       "name": "Health Center",
       "coordinate": { "latitude": 7.67762, "longitude": 4.456507 },
       "type": "Health"
     },
     {
       "id": 31,
+      "image": "",
       "name": "RUNSA Shop",
       "coordinate": { "latitude": 7.676868, "longitude": 4.454908 },
       "type": "Shopping"
     },
     {
       "id": 32,
+      "image": "",
       "name": "Male Extension",
       "coordinate": { "latitude": 7.676678, "longitude": 4.455415 },
       "type": "Hostel"
     },
     {
       "id": 33,
+      "image": "http://192.168.169.171:5000/static/images/olanipekun_building.jpeg",
       "name": "Chief Olanipekun Hall",
       "coordinate": { "latitude": 7.677611, "longitude": 4.454607 },
       "type": "Event Centre"
@@ -208,21 +241,164 @@
 
     {
       "id": 34,
+      "image": "",
       "name": "Double Portion",
       "coordinate": { "latitude": 7.675745, "longitude": 4.451565 },
       "type": "Food & Dining"
     },
     {
       "id": 35,
+      "image": "",
       "name": "Chop LYFE",
       "coordinate": { "latitude": 7.678271, "longitude": 4.452238 },
       "type": "Food & Dining"
     },
     {
       "id": 36,
+      "image": "",
       "name": "Numbers Cafeteria",
       "coordinate": { "latitude": 7.679443, "longitude": 4.451681 },
       "type": "Food & Dining"
+    },
+    {
+      "id": 37,
+      "image": "",
+      "name": "Sciences Laboratory",
+      "coordinate": { "latitude": 7.683109, "longitude": 4.458179 },
+      "type": "Laboratory"
+    },
+    {
+      "id": 38,
+      "image": "",
+      "name": "Natural Sciences Laboratory",
+      "coordinate": { "latitude": 7.682879, "longitude": 4.457291 },
+      "type": "Laboratory"
+    },
+    {
+      "id": 39,
+      "image": "",
+      "name": "MLT",
+      "coordinate": { "latitude": 7.682076, "longitude": 4.458046 },
+      "type": "Lecture Rooms"
+    },
+    {
+      "id": 40,
+      "image": "",
+      "name": "Research Institute",
+      "coordinate": { "latitude": 7.684646, "longitude": 4.453611 },
+      "type": "Administrative"
+    },
+    {
+      "id": 41,
+      "image": "",
+      "name": "RUN's Business Ventures",
+      "coordinate": { "latitude": 7.682962, "longitude": 4.45672 },
+      "type": "Administrative"
+    },
+    {
+      "id": 42,
+      "image": "http://192.168.169.171:5000/static/images/event_centre.jpeg",
+      "name": "Event Center",
+      "coordinate": { "latitude": 7.686409, "longitude": 4.456671 },
+      "type": "Event Centre"
+    },
+    {
+      "id": 43,
+      "image": "",
+      "name": "Workshop Engineering",
+      "coordinate": { "latitude": 7.68109, "longitude": 4.444911 },
+      "type": "Faculty"
+    },
+    {
+      "id": 44,
+      "image": "http://192.168.169.171:5000/static/images/engineering_faculty.jpeg",
+      "name": "Engineering Faculty",
+      "coordinate": { "latitude": 7.680707, "longitude": 4.446139 },
+      "type": "Faculty"
+    },
+    {
+      "id": 45,
+      "image": "",
+      "name": "SEAP",
+      "coordinate": { "latitude": 7.680445, "longitude": 4.446076 },
+      "type": "Faculty"
+    },
+    {
+      "id": 46,
+      "image": "",
+      "name": "Staff Quarters",
+      "coordinate": { "latitude": 7.676464, "longitude": 4.447299 },
+      "type": "Hostel"
+    },
+    {
+      "id": 47,
+      "image": "",
+      "name": "Survey and Geoinformatics Laboratory",
+      "coordinate": { "latitude": 7.681499, "longitude": 4.445745 },
+      "type": "Laboratory"
+    },
+    {
+      "id": 48,
+      "image": "http://192.168.169.171:5000/static/images/faculty_of_law.jpeg",
+      "name": "Faculty of Law",
+      "coordinate": { "latitude": 7.683341, "longitude": 4.445949 },
+      "type": "Faculty"
+    },
+    {
+      "id": 49,
+      "image": "http://192.168.169.171:5000/static/images/new_era_cafe.jpeg",
+      "name": "New Era Cafeteria",
+      "coordinate": { "latitude": 7.684897, "longitude": 4.445171 },
+      "type": "Food & Dining"
+    },
+    {
+      "id": 50,
+      "image": "",
+      "name": "Deborah Hall / Female Engineering Hostel",
+      "coordinate": { "latitude": 7.685322, "longitude": 4.445627 },
+      "type": "Hostel"
+    },
+    {
+      "id": 51,
+      "image": "http://192.168.169.171:5000/static/images/engineering_boys_hostel.jpeg",
+      "name": "Male Engineering Hostel",
+      "coordinate": { "latitude": 7.687499, "longitude": 4.44932 },
+      "type": "Hostel"
+    },
+    {
+      "id": 52,
+      "image": "http://192.168.169.171:5000/static/images/fire_service.jpeg",
+      "name": "RUN Fire Service Building",
+      "coordinate": { "latitude": 7.683681, "longitude": 4.450812 },
+      "type": "Administrative"
+    },
+    {
+      "id": 53,
+      "image": "http://192.168.169.171:5000/static/images/sport_complex.jpeg",
+      "name": "Lawn Tennis Court",
+      "coordinate": { "latitude": 7.683952, "longitude": 4.458021 },
+      "type": "Sports Facility"
+    },
+    {
+      "id": 54,
+      "image": "http://192.168.169.171:5000/static/images/sport_complex_two.jpeg",
+      "name": "Sports Complex",
+      "coordinate": { "latitude": 7.683899, "longitude": 4.457294 },
+      "type": "Sports Facility"
+    },
+    {
+      "id": 55,
+      "image": "",
+      "name": "Seeding Laboratory",
+      "coordinate": {"latitude": 7.684900, "longitude": 4.451528 },
+      "type": "Laboratory"
+    },
+    {
+      "id": 56,
+      "image": "",
+      "name": "Tourism Village",
+      "coordinate": {"latitude": 7.681743, "longitude": 4.456536 },
+      "type": "Event Centre"
     }
   ]
 }

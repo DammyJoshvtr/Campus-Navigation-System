@@ -66,24 +66,17 @@ const Signin = () => {
             id: res.user.id || null,
             name: res.user.name || "",
             email: res.user.email || "",
-            studentId: "",
-            faculty: "",
-            level: ""
+            studentId: res.user.studentId || "",
+            faculty: res.user.faculty || "",
+            level: res.user.level || ""
           };
           
-          // Try to merge with existing data if it exists
           try {
-            const existingRaw = await AsyncStorage.getItem("@campus_profile");
-            if (existingRaw) {
-              const existing = JSON.parse(existingRaw);
-              if (existing.email === res.user.email) {
-                profileData.studentId = existing.studentId || "";
-                profileData.faculty = existing.faculty || "";
-                profileData.level = existing.level || "";
-              }
-            }
             await AsyncStorage.setItem("@campus_profile", JSON.stringify(profileData));
             await AsyncStorage.setItem("@campus_session", "true");
+            if (res.token) {
+              await AsyncStorage.setItem("@campus_token", res.token);
+            }
           } catch (e) {
             console.log("Failed to save profile", e);
           }

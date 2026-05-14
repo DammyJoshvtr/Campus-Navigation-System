@@ -8,6 +8,10 @@ backend/venv/
 __pycache__/
 *.pyc
 
+joshua_backend/static/images
+.env
+joshua_backend/.env
+
 # Environment variables
 .env
 backend/.env

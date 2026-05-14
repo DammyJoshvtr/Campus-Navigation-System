@@ -330,7 +330,21 @@ export default function Home() {
   };
 
   const handleSaveDirection = async () => {
-    if (!currentRouteDetails) return;
+    let detailsToSave = currentRouteDetails;
+    if (!detailsToSave) {
+      if (!userLocation || !selectedLocation) {
+        showToast("Cannot save route without current location and destination.");
+        return;
+      }
+      detailsToSave = {
+        originName: "Current Location",
+        originLat: userLocation.latitude,
+        originLng: userLocation.longitude,
+        destName: selectedLocation.name || "Selected Location",
+        destLat: selectedLocation.coordinate.latitude,
+        destLng: selectedLocation.coordinate.longitude,
+      };
+    }
 
     setIsSavingRoute(true);
     try {
@@ -348,12 +362,12 @@ export default function Home() {
 
       await api.saveDirection({
         user_id: userId,
-        origin_name: currentRouteDetails.originName,
-        origin_lat: currentRouteDetails.originLat,
-        origin_lng: currentRouteDetails.originLng,
-        destination_name: currentRouteDetails.destName,
-        destination_lat: currentRouteDetails.destLat,
-        destination_lng: currentRouteDetails.destLng,
+        origin_name: detailsToSave.originName,
+        origin_lat: detailsToSave.originLat,
+        origin_lng: detailsToSave.originLng,
+        destination_name: detailsToSave.destName,
+        destination_lat: detailsToSave.destLat,
+        destination_lng: detailsToSave.destLng,
       });
 
       showToast("Route saved successfully!");
