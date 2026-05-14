@@ -66,6 +66,7 @@ const Layout = () => {
           tabBarStyle: {
             height: 70 + insets.bottom,
             paddingBottom: insets.bottom,
+            paddingTop: 15,
             backgroundColor: theme.surface,
             borderTopColor: theme.border,
           },
