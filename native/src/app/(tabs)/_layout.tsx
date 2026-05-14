@@ -64,11 +64,10 @@ const Layout = () => {
             alignItems: "center",
           },
           tabBarStyle: {
-            height: 80 + insets.bottom,
+            height: 70 + insets.bottom,
             paddingBottom: insets.bottom,
             backgroundColor: theme.surface,
             borderTopColor: theme.border,
-            paddingTop: insets.top
           },
         }}
       >
