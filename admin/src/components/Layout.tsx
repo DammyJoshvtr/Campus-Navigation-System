@@ -13,7 +13,21 @@ import {
 
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
+
+  const user = (() => {
+    try {
+      const userRaw = localStorage.getItem('user');
+      return userRaw ? JSON.parse(userRaw) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const userName = user?.name || 'Admin User';
+  const userEmail = user?.email || 'admin@run.edu.ng';
+  const userInitial = userName.charAt(0).toUpperCase();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -91,9 +105,50 @@ const Layout = () => {
           
           <div className="flex-1" />
           
-          <div className="flex items-center gap-4">
-            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold ring-2 ring-white shadow-sm">
-              A
+          <div className="flex items-center gap-4 relative">
+            {/* Click-away overlay */}
+            {isProfileOpen && (
+              <div 
+                className="fixed inset-0 z-40 bg-transparent" 
+                onClick={() => setIsProfileOpen(false)}
+              />
+            )}
+
+            <div className="relative z-50">
+              <button 
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-50 transition-colors focus:outline-none cursor-pointer"
+              >
+                <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold ring-2 ring-white shadow-sm transition-transform duration-200 active:scale-95">
+                  {userInitial}
+                </div>
+                <div className="hidden md:flex flex-col items-start text-left">
+                  <span className="text-xs font-semibold text-slate-800 leading-none">{userName}</span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1 capitalize">{user?.role || 'Admin'}</span>
+                </div>
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 py-2 animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="px-4 py-2.5 border-b border-slate-100">
+                    <p className="text-xs font-semibold text-slate-900 truncate">{userName}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 truncate">{userEmail}</p>
+                  </div>
+                  
+                  <div className="p-1.5">
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex items-center w-full px-3 py-2 text-xs font-semibold text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
