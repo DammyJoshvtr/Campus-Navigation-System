@@ -5,6 +5,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  Search,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -18,6 +19,9 @@ import {
 const Locations = () => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("All");
+  const [sortBy, setSortBy] = useState("name-asc");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [formData, setFormData] = useState({
@@ -120,6 +124,38 @@ const Locations = () => {
     }
   };
 
+  const uniqueTypes = ["All", ...Array.from(new Set(locations.map(loc => loc.type).filter(Boolean)))];
+
+  const processedLocations = locations
+    .filter((loc) => {
+      const matchesSearch =
+        loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (loc.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (loc.type || "").toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesType = selectedType === "All" || loc.type === selectedType;
+      
+      return matchesSearch && matchesType;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === "name-desc") {
+        return b.name.localeCompare(a.name);
+      }
+      if (sortBy === "type-asc") {
+        return (a.type || "").localeCompare(b.type || "");
+      }
+      if (sortBy === "type-desc") {
+        return (b.type || "").localeCompare(a.type || "");
+      }
+      if (sortBy === "newest") {
+        return b.id - a.id;
+      }
+      return 0;
+    });
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -148,6 +184,49 @@ const Locations = () => {
         </button>
       </div>
 
+      {/* Search & Sort Controls */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search locations by name, type, description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-colors"
+          />
+        </div>
+        <div className="flex gap-4 w-full md:w-auto">
+          <div className="w-1/2 md:w-48">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="block w-full px-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm font-medium text-slate-700 transition-colors"
+            >
+              <option value="All">All Types</option>
+              {uniqueTypes.filter(t => t !== "All").map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-1/2 md:w-48">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="block w-full px-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm font-medium text-slate-700 transition-colors"
+            >
+              <option value="name-asc">Sort: Name A-Z</option>
+              <option value="name-desc">Sort: Name Z-A</option>
+              <option value="type-asc">Sort: Type A-Z</option>
+              <option value="type-desc">Sort: Type Z-A</option>
+              <option value="newest">Sort: Newest First</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -161,17 +240,17 @@ const Locations = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {locations.length === 0 ? (
+              {processedLocations.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
                     className="px-6 py-8 text-center text-slate-500"
                   >
-                    No locations found.
+                    {searchTerm || selectedType !== "All" ? "No locations match your search/filter criteria." : "No locations found."}
                   </td>
                 </tr>
               ) : (
-                locations.map((loc) => (
+                processedLocations.map((loc) => (
                   <tr
                     key={loc.id}
                     className="hover:bg-slate-50/50 transition-colors"

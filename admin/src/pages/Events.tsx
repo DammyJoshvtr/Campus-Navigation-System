@@ -1,23 +1,26 @@
 import {
-  CalendarDays,
-  Image as ImageIcon,
-  Loader2,
-  Pencil,
-  Plus,
-  Trash2,
+    CalendarDays,
+    Image as ImageIcon,
+    Loader2,
+    Pencil,
+    Plus,
+    Trash2,
+    Search,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
-  createEvent,
-  deleteEvent,
-  getEvents,
-  updateEvent,
-  uploadImage,
+    createEvent,
+    deleteEvent,
+    getEvents,
+    updateEvent,
+    uploadImage,
 } from "../services/api";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [formData, setFormData] = useState({
@@ -121,6 +124,36 @@ const Events = () => {
     }
   };
 
+  const processedEvents = events
+    .filter((evt: any) => {
+      const query = searchTerm.toLowerCase();
+      return (
+        evt.title.toLowerCase().includes(query) ||
+        (evt.locationName || "").toLowerCase().includes(query) ||
+        (evt.author || "").toLowerCase().includes(query) ||
+        (evt.description || "").toLowerCase().includes(query)
+      );
+    })
+    .sort((a: any, b: any) => {
+      if (sortBy === "date-asc") {
+        const dateA = a.date ? new Date(`${a.date}T${a.time || "00:00:00"}`).getTime() : 0;
+        const dateB = b.date ? new Date(`${b.date}T${b.time || "00:00:00"}`).getTime() : 0;
+        return dateA - dateB;
+      }
+      if (sortBy === "date-desc") {
+        const dateA = a.date ? new Date(`${a.date}T${a.time || "00:00:00"}`).getTime() : 0;
+        const dateB = b.date ? new Date(`${b.date}T${b.time || "00:00:00"}`).getTime() : 0;
+        return dateB - dateA;
+      }
+      if (sortBy === "title-asc") {
+        return a.title.localeCompare(b.title);
+      }
+      if (sortBy === "newest") {
+        return b.id - a.id;
+      }
+      return 0;
+    });
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -147,6 +180,36 @@ const Events = () => {
         </button>
       </div>
 
+      {/* Search & Sort Controls */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search events by title, location, author, description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-colors"
+          />
+        </div>
+        <div className="flex gap-4 w-full md:w-auto">
+          <div className="w-full md:w-64">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="block w-full px-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm font-medium text-slate-700 transition-colors"
+            >
+              <option value="newest">Sort: Newest First</option>
+              <option value="date-asc">Sort: Event Date (Soonest)</option>
+              <option value="date-desc">Sort: Event Date (Furthest)</option>
+              <option value="title-asc">Sort: Title A-Z</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -160,17 +223,17 @@ const Events = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {events.length === 0 ? (
+              {processedEvents.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
                     className="px-6 py-8 text-center text-slate-500"
                   >
-                    No events found.
+                    {searchTerm ? "No events match your search query." : "No events found."}
                   </td>
                 </tr>
               ) : (
-                events.map((evt) => (
+                processedEvents.map((evt: any) => (
                   <tr
                     key={evt.id}
                     className="hover:bg-slate-50/50 transition-colors"
