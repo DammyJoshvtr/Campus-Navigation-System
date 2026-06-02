@@ -234,6 +234,17 @@ const Signin = () => {
                     </Pressable>
                   </View>
                 </View>
+                
+                {activeTab === "signin" && (
+                  <Pressable
+                    onPress={() => router.push("/forgotPassword")}
+                    className="self-end mt-2"
+                  >
+                    <Text className="text-primary font-home-semibold text-[14px]">
+                      Forgot Password?
+                    </Text>
+                  </Pressable>
+                )}
               </View>
 
               {/* Button */}

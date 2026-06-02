@@ -351,6 +351,88 @@ def resend_otp():
 
     return jsonify({"message": "OTP resent successfully."}), 200
 
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT id FROM users WHERE email = %s', (email,))
+    user_data = cursor.fetchone()
+
+    if not user_data:
+        cursor.close()
+        return jsonify({"message": "User not found"}), 404
+
+    db_id = user_data[0]
+
+    otp = generate_otp()
+    expires_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+    try:
+        cursor.execute(
+            'UPDATE users SET otp_code=%s, otp_expires_at=%s WHERE id=%s',
+            (otp, expires_at, db_id)
+        )
+        mysql.connection.commit()
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Database error: {e}"}), 500
+
+    cursor.close()
+    send_otp_email(email, otp)
+    log_activity(user_id=db_id, user_email=email, action="Forgot Password OTP Sent", details=f"Generated and sent OTP code for password reset to {email}")
+
+    return jsonify({"message": "Reset code sent successfully."}), 200
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email')
+    otp = data.get('otp')
+    password = data.get('password')
+
+    if not email or not otp or not password:
+        return jsonify({"message": "Email, OTP, and new password are required"}), 400
+
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT id, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
+    user_data = cursor.fetchone()
+
+    if not user_data:
+        cursor.close()
+        return jsonify({"message": "User not found"}), 404
+
+    db_id, db_otp, expires_at = user_data
+
+    if db_otp != otp:
+        cursor.close()
+        return jsonify({"message": "Invalid OTP code"}), 400
+
+    if expires_at and datetime.datetime.now() > expires_at:
+        cursor.close()
+        return jsonify({"message": "OTP has expired"}), 400
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    try:
+        cursor.execute(
+            'UPDATE users SET password=%s, otp_code=NULL, otp_expires_at=NULL WHERE id=%s',
+            (hashed_password, db_id)
+        )
+        mysql.connection.commit()
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Database error: {e}"}), 500
+
+    cursor.close()
+    log_activity(user_id=db_id, user_email=email, action="Password Reset Successful", details=f"Password reset successfully verified via OTP for {email}")
+
+    return jsonify({"message": "Password reset successfully."}), 200
+
 # ==========================================
 # SAVED DIRECTIONS API
 # ==========================================

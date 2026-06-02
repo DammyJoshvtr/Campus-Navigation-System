@@ -8,3 +8,6 @@ interface LocationDetails {
   };
   type: String;
 }
+
+declare module '@mapbox/polyline';
+
