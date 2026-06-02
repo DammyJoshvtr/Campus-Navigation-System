@@ -107,13 +107,12 @@ def upload_file(current_user):
     if file.filename == '':
         return jsonify({"message": "No selected file"}), 400
     if file:
-        filename = secure_filename(file.filename)
-        # add timestamp to prevent collisions
-        import time
-        filename = f"{int(time.time())}_{filename}"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        url = url_for('static', filename='images/' + filename, _external=True)
-        return jsonify({"message": "File uploaded successfully", "url": url}), 200
+        import base64
+        file_content = file.read()
+        encoded = base64.b64encode(file_content).decode('utf-8')
+        mime_type = file.mimetype or 'image/jpeg'
+        base64_url = f"data:{mime_type};base64,{encoded}"
+        return jsonify({"message": "File uploaded successfully", "url": base64_url}), 200
 
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
