@@ -8,7 +8,8 @@ import {
   CheckSquare, 
   LogOut,
   Menu,
-  X
+  X,
+  History
 } from 'lucide-react';
 
 const Layout = () => {
@@ -41,6 +42,7 @@ const Layout = () => {
     { to: '/events', icon: CalendarDays, label: 'Events' },
     { to: '/users', icon: Users, label: 'Users' },
     { to: '/approvals', icon: CheckSquare, label: 'Approvals' },
+    { to: '/audit-logs', icon: History, label: 'Audit Logs' },
   ];
 
   return (

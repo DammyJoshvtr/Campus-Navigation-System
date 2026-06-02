@@ -7,6 +7,7 @@ import Locations from './pages/Locations';
 import Events from './pages/Events';
 import Users from './pages/Users';
 import Approvals from './pages/Approvals';
+import AuditLogs from './pages/AuditLogs';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -44,6 +45,7 @@ function App() {
           <Route path="events" element={<Events />} />
           <Route path="users" element={<Users />} />
           <Route path="approvals" element={<Approvals />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
         </Route>
       </Routes>
     </BrowserRouter>
