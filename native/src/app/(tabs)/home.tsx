@@ -706,6 +706,7 @@ export default function Home() {
         isSaving={isSavingRoute}
         loading={routeLoading}
         routeInfo={routeInfo ?? undefined}
+        events={eventsData}
       />
 
       {/* Animated Toast */}

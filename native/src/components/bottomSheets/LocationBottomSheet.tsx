@@ -11,7 +11,6 @@
  */
 
 import { useTheme } from "@/context/ThemeContext";
-import { events } from "@/services/Events";
 import { formatDistance, formatDuration } from "@/services/directionServices";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -54,6 +53,7 @@ type Props = {
     distance: number;
     duration: number;
   };
+  events?: any[];
 };
 
 const LocationBottomSheet = forwardRef<BottomSheet, Props>(
@@ -65,6 +65,7 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
       loading,
       isSaving,
       routeInfo,
+      events = [],
     },
     ref,
   ) => {
@@ -91,8 +92,10 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
 
     const filteredEvents = useMemo(() => {
       if (!location) return [];
-      return events.filter((e) => e.locationName === location.name);
-    }, [location]);
+      return (events || []).filter(
+        (e) => e.locationName?.toLowerCase() === location.name?.toLowerCase(),
+      );
+    }, [location, events]);
 
     return (
       <BottomSheet
@@ -306,7 +309,7 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
                     <Text
                       style={[styles.organizer, { color: theme.textMuted }]}
                     >
-                      By {event.organizer}
+                      By {event.organizer || event.author}
                     </Text>
                   </View>
                 ))}
