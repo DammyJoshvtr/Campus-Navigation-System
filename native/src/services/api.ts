@@ -89,6 +89,34 @@ const authResendOtp = async (email: string) => {
   }
 };
 
+const authForgotPassword = async (email: string) => {
+  try {
+    const res = await axios.post(`${api.baseUrl}/api/auth/forgot-password`, {
+      email,
+    });
+    console.log(res.data);
+    return res.data;
+  } catch (err: any) {
+    console.log("Forgot Password Error: ", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+const authResetPassword = async (email: string, otp: string, data: any) => {
+  try {
+    const res = await axios.post(`${api.baseUrl}/api/auth/reset-password`, {
+      email,
+      otp,
+      ...data,
+    });
+    console.log(res.data);
+    return res.data;
+  } catch (err: any) {
+    console.log("Reset Password Error: ", err.response?.data || err.message);
+    throw err;
+  }
+};
+
 interface SaveDirectionData {
   user_id: number;
   origin_name: string;
@@ -197,6 +225,8 @@ export default {
   authSignin,
   authVerifyOtp,
   authResendOtp,
+  authForgotPassword,
+  authResetPassword,
   saveDirection,
   getSavedDirections,
   deleteDirection,

@@ -333,7 +333,9 @@ export default function Home() {
     let detailsToSave = currentRouteDetails;
     if (!detailsToSave) {
       if (!userLocation || !selectedLocation) {
-        showToast("Cannot save route without current location and destination.");
+        showToast(
+          "Cannot save route without current location and destination.",
+        );
         return;
       }
       detailsToSave = {
@@ -704,6 +706,7 @@ export default function Home() {
         isSaving={isSavingRoute}
         loading={routeLoading}
         routeInfo={routeInfo ?? undefined}
+        events={eventsData}
       />
 
       {/* Animated Toast */}

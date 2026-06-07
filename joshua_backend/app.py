@@ -43,6 +43,18 @@ mysql = MySQL(app)
 bcrypt = Bcrypt(app)
 mail = Mail(app)
 
+def log_activity(user_id=None, user_email=None, action="", details=""):
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+            INSERT INTO audit_logs (user_id, user_email, action, details, ip_address)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (user_id, user_email or 'Guest', action, details, request.remote_addr))
+        mysql.connection.commit()
+        cursor.close()
+    except Exception as e:
+        print(f"Failed to write audit log: {e}")
+
 def generate_otp():
     return str(random.randint(100000, 999999))
 
@@ -107,13 +119,12 @@ def upload_file(current_user):
     if file.filename == '':
         return jsonify({"message": "No selected file"}), 400
     if file:
-        filename = secure_filename(file.filename)
-        # add timestamp to prevent collisions
-        import time
-        filename = f"{int(time.time())}_{filename}"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        url = url_for('static', filename='images/' + filename, _external=True)
-        return jsonify({"message": "File uploaded successfully", "url": url}), 200
+        import base64
+        file_content = file.read()
+        encoded = base64.b64encode(file_content).decode('utf-8')
+        mime_type = file.mimetype or 'image/jpeg'
+        base64_url = f"data:{mime_type};base64,{encoded}"
+        return jsonify({"message": "File uploaded successfully", "url": base64_url}), 200
 
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
@@ -154,6 +165,7 @@ def signup():
             
             cursor.close()
             send_otp_email(email, otp)
+            log_activity(user_id=db_id, user_email=email, action="User Signup Initiated", details=f"Re-sent OTP for signup to {email}")
             return jsonify({"message": "User updated. Please check your email for the OTP.", "email": email}), 201
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -171,10 +183,13 @@ def signup():
         cursor.close()
         return jsonify({"message": f"Database error: {e}"}), 500
     
+    # Fetch user id for logging
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT id FROM users WHERE email = %s', (email,))
+    user_id = cursor.fetchone()[0]
     cursor.close()
-
     send_otp_email(email, otp)
-
+    log_activity(user_id=user_id, user_email=email, action="User Signup Initiated", details=f"Registered and sent verification OTP to {email}")
     return jsonify({"message": "User created. Please check your email for the OTP.", "email": email}), 201
 
 @app.route('/api/auth/verify-otp', methods=['POST'])
@@ -221,6 +236,7 @@ def verify_otp():
     cursor.execute('UPDATE users SET is_verified = True, otp_code = NULL WHERE id = %s', (user_id,))
     mysql.connection.commit()
     cursor.close()
+    log_activity(user_id=user_id, user_email=email, action="User Signup Verified", details=f"Email {email} successfully verified via OTP.")
 
     token = jwt.encode({
         'id': user_id,
@@ -284,6 +300,7 @@ def login():
         'role': role,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
     }, app.secret_key, algorithm="HS256")
+    log_activity(user_id=db_id, user_email=db_email, action="User Login", details=f"User successfully logged in. Role: {role}")
 
     return jsonify({
         "message": "Login successful",
@@ -334,6 +351,88 @@ def resend_otp():
 
     return jsonify({"message": "OTP resent successfully."}), 200
 
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT id FROM users WHERE email = %s', (email,))
+    user_data = cursor.fetchone()
+
+    if not user_data:
+        cursor.close()
+        return jsonify({"message": "User not found"}), 404
+
+    db_id = user_data[0]
+
+    otp = generate_otp()
+    expires_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+    try:
+        cursor.execute(
+            'UPDATE users SET otp_code=%s, otp_expires_at=%s WHERE id=%s',
+            (otp, expires_at, db_id)
+        )
+        mysql.connection.commit()
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Database error: {e}"}), 500
+
+    cursor.close()
+    send_otp_email(email, otp)
+    log_activity(user_id=db_id, user_email=email, action="Forgot Password OTP Sent", details=f"Generated and sent OTP code for password reset to {email}")
+
+    return jsonify({"message": "Reset code sent successfully."}), 200
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email')
+    otp = data.get('otp')
+    password = data.get('password')
+
+    if not email or not otp or not password:
+        return jsonify({"message": "Email, OTP, and new password are required"}), 400
+
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT id, otp_code, otp_expires_at FROM users WHERE email = %s', (email,))
+    user_data = cursor.fetchone()
+
+    if not user_data:
+        cursor.close()
+        return jsonify({"message": "User not found"}), 404
+
+    db_id, db_otp, expires_at = user_data
+
+    if db_otp != otp:
+        cursor.close()
+        return jsonify({"message": "Invalid OTP code"}), 400
+
+    if expires_at and datetime.datetime.now() > expires_at:
+        cursor.close()
+        return jsonify({"message": "OTP has expired"}), 400
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    try:
+        cursor.execute(
+            'UPDATE users SET password=%s, otp_code=NULL, otp_expires_at=NULL WHERE id=%s',
+            (hashed_password, db_id)
+        )
+        mysql.connection.commit()
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Database error: {e}"}), 500
+
+    cursor.close()
+    log_activity(user_id=db_id, user_email=email, action="Password Reset Successful", details=f"Password reset successfully verified via OTP for {email}")
+
+    return jsonify({"message": "Password reset successfully."}), 200
+
 # ==========================================
 # SAVED DIRECTIONS API
 # ==========================================
@@ -362,6 +461,15 @@ def save_direction():
         mysql.connection.commit()
         direction_id = cursor.lastrowid
         cursor.close()
+        try:
+            cursor2 = mysql.connection.cursor()
+            cursor2.execute('SELECT email FROM users WHERE id = %s', (user_id,))
+            email_row = cursor2.fetchone()
+            user_email = email_row[0] if email_row else None
+            cursor2.close()
+        except:
+            user_email = None
+        log_activity(user_id=user_id, user_email=user_email, action="Save Route", details=f"Saved route from '{origin_name}' to '{destination_name}'")
         return jsonify({"message": "Direction saved successfully", "id": direction_id}), 201
     except Exception as e:
         cursor.close()
@@ -402,6 +510,22 @@ def get_saved_directions(user_id):
 
 @app.route('/api/directions/<int:direction_id>', methods=['DELETE'])
 def delete_direction(direction_id):
+    try:
+        cursor2 = mysql.connection.cursor()
+        cursor2.execute('SELECT user_id, origin_name, destination_name FROM saved_directions WHERE id = %s', (direction_id,))
+        row = cursor2.fetchone()
+        cursor2.close()
+        if row:
+            u_id, orig, dest = row
+            cursor3 = mysql.connection.cursor()
+            cursor3.execute('SELECT email FROM users WHERE id = %s', (u_id,))
+            e_row = cursor3.fetchone()
+            cursor3.close()
+            u_email = e_row[0] if e_row else None
+            log_activity(user_id=u_id, user_email=u_email, action="Delete Route", details=f"Deleted saved route ID: {direction_id} ('{orig}' to '{dest}')")
+    except Exception as e_log:
+        print(f"Log error in delete direction: {e_log}")
+
     cursor = mysql.connection.cursor()
     try:
         cursor.execute('DELETE FROM saved_directions WHERE id = %s', (direction_id,))
@@ -442,6 +566,19 @@ def create_event():
         mysql.connection.commit()
         event_id = cursor.lastrowid
         cursor.close()
+        
+        user_id = None
+        user_email = None
+        if 'Authorization' in request.headers:
+            try:
+                token = request.headers['Authorization'].split(" ")[1] if "Bearer " in request.headers['Authorization'] else request.headers['Authorization']
+                data_token = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+                user_id = data_token.get('id')
+                user_email = data_token.get('email')
+            except:
+                pass
+        log_activity(user_id=user_id, user_email=user_email or author, action="Create Event Request", details=f"Created pending event request '{title}' at '{locationName}'")
+        
         return jsonify({"message": "Event created successfully", "id": event_id}), 201
     except Exception as e:
         # Fallback if approval_status is not yet added
@@ -607,6 +744,7 @@ def create_location(current_user):
         mysql.connection.commit()
         loc_id = cursor.lastrowid
         cursor.close()
+        log_activity(user_id=current_user.get('id'), user_email=current_user.get('email'), action="Create Location", details=f"Admin created location '{data.get('name')}' (Type: {data.get('type')})")
         return jsonify({"message": "Location created successfully", "id": loc_id}), 201
     except Exception as e:
         return jsonify({"message": f"Failed to create location: {str(e)}"}), 500
@@ -624,6 +762,7 @@ def update_location(current_user, id):
         ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description'), id))
         mysql.connection.commit()
         cursor.close()
+        log_activity(user_id=current_user.get('id'), user_email=current_user.get('email'), action="Update Location", details=f"Admin updated location ID: {id} ('{data.get('name')}')")
         return jsonify({"message": "Location updated successfully"}), 200
     except Exception as e:
         return jsonify({"message": f"Failed to update location: {str(e)}"}), 500
@@ -636,6 +775,7 @@ def delete_location(current_user, id):
         cursor.execute('DELETE FROM locations WHERE id = %s', (id,))
         mysql.connection.commit()
         cursor.close()
+        log_activity(user_id=current_user.get('id'), user_email=current_user.get('email'), action="Delete Location", details=f"Admin deleted location ID: {id}")
         return jsonify({"message": "Location deleted successfully"}), 200
     except Exception as e:
         return jsonify({"message": f"Failed to delete location: {str(e)}"}), 500
@@ -718,6 +858,7 @@ def approve_content(current_user, content_type, id):
         
         mysql.connection.commit()
         cursor.close()
+        log_activity(user_id=current_user.get('id'), user_email=current_user.get('email'), action="Content Approval Change", details=f"Admin updated {content_type} ID {id} status to {status}")
         return jsonify({"message": f"{content_type.capitalize()} status updated to {status}"}), 200
     except Exception as e:
         return jsonify({"message": f"Failed to update status: {str(e)}"}), 500
@@ -770,6 +911,36 @@ def get_user_stats(current_user, id):
         }), 200
     except Exception as e:
         return jsonify({"message": f"Failed to fetch stats: {str(e)}"}), 500
+
+@app.route('/api/admin/audit-logs', methods=['GET'])
+@admin_required
+def get_audit_logs(current_user):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute('''
+            SELECT id, user_id, user_email, action, details, ip_address, created_at
+            FROM audit_logs
+            ORDER BY created_at DESC
+            LIMIT 200
+        ''')
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        logs = []
+        for row in rows:
+            logs.append({
+                "id": row[0],
+                "user_id": row[1],
+                "user_email": row[2],
+                "action": row[3],
+                "details": row[4],
+                "ip_address": row[5],
+                "created_at": str(row[6])
+            })
+        return jsonify(logs), 200
+    except Exception as e:
+        cursor.close()
+        return jsonify({"message": f"Failed to fetch audit logs: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

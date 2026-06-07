@@ -92,6 +92,19 @@ export const updateUserRole = (id: number, role: string) =>
 export const approveContent = (type: string, id: number, status: string) =>
   api.put(`/admin/approve/${type}/${id}`, { status });
 
+// Audit Logs
+export interface AuditLog {
+  id: number;
+  user_id: number | null;
+  user_email: string;
+  action: string;
+  details: string;
+  ip_address: string;
+  created_at: string;
+}
+
+export const getAuditLogs = () => api.get<AuditLog[]>("/admin/audit-logs");
+
 // Uploads
 export const uploadImage = async (file: File) => {
   const formData = new FormData();
@@ -103,3 +116,4 @@ export const uploadImage = async (file: File) => {
 };
 
 export default api;
+

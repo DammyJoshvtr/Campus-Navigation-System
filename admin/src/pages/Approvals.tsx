@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { getEvents, getLocations, approveContent } from '../services/api';
-import { CheckCircle, XCircle, Loader2, CalendarDays, MapPin, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, CalendarDays, MapPin, Clock, Search } from 'lucide-react';
 
 const Approvals = () => {
   const [pendingItems, setPendingItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
 
   const fetchPendingContent = async () => {
     try {
@@ -22,7 +24,7 @@ const Approvals = () => {
         .filter(l => l.approval_status === 'pending')
         .map(l => ({ ...l, contentType: 'location' }));
 
-      setPendingItems([...pendingEvents, ...pendingLocations].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)));
+      setPendingItems([...pendingEvents, ...pendingLocations]);
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,6 +49,38 @@ const Approvals = () => {
     }
   };
 
+  const processedItems = pendingItems
+    .filter((item: any) => {
+      const query = searchTerm.toLowerCase();
+      const titleOrName = (item.title || item.name || "").toLowerCase();
+      const description = (item.description || "").toLowerCase();
+      const author = (item.author || "Unknown").toLowerCase();
+      return (
+        titleOrName.includes(query) ||
+        description.includes(query) ||
+        author.includes(query)
+      );
+    })
+    .sort((a: any, b: any) => {
+      if (sortBy === "newest") {
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      }
+      if (sortBy === "oldest") {
+        return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+      }
+      if (sortBy === "events-first") {
+        if (a.contentType === "event" && b.contentType !== "event") return -1;
+        if (a.contentType !== "event" && b.contentType === "event") return 1;
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      }
+      if (sortBy === "locations-first") {
+        if (a.contentType === "location" && b.contentType !== "location") return -1;
+        if (a.contentType !== "location" && b.contentType === "location") return 1;
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      }
+      return 0;
+    });
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -62,15 +96,49 @@ const Approvals = () => {
         <p className="text-slate-500 text-sm mt-1">Review pending events and locations submitted by users.</p>
       </div>
 
+      {/* Search & Sort Controls */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100 animate-in fade-in duration-500">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search pending items by title, description, or author..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-colors"
+          />
+        </div>
+        <div className="flex gap-4 w-full md:w-auto">
+          <div className="w-full md:w-64">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="block w-full px-3 py-2 border border-slate-300 rounded-xl leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm font-medium text-slate-700 transition-colors"
+            >
+              <option value="newest">Sort: Newest Submission</option>
+              <option value="oldest">Sort: Oldest Submission</option>
+              <option value="events-first">Sort: Events First</option>
+              <option value="locations-first">Sort: Locations First</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {pendingItems.length === 0 ? (
+        {processedItems.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center">
             <CheckCircle className="mx-auto h-12 w-12 text-emerald-400 mb-4" />
             <h3 className="text-lg font-medium text-slate-900 mb-1">All caught up!</h3>
-            <p className="text-slate-500">There are no pending items requiring your approval.</p>
+            <p className="text-slate-500">
+              {searchTerm 
+                ? "No pending items match your search criteria." 
+                : "There are no pending items requiring your approval."}
+            </p>
           </div>
         ) : (
-          pendingItems.map((item) => {
+          processedItems.map((item: any) => {
             const isEvent = item.contentType === 'event';
             const isProcessing = processingId === `${item.contentType}-${item.id}`;
             
