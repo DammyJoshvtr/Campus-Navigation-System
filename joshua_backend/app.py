@@ -15,6 +15,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Environment variable debugging
+import sys
+print("--- ENVIRONMENT VARIABLES DEBUG ---", file=sys.stderr, flush=True)
+print(f"MYSQL_HOST: {os.environ.get('MYSQL_HOST')}", file=sys.stderr, flush=True)
+print(f"MYSQL_PORT: {os.environ.get('MYSQL_PORT')}", file=sys.stderr, flush=True)
+print(f"MYSQL_USER: {os.environ.get('MYSQL_USER')}", file=sys.stderr, flush=True)
+print(f"MYSQL_DB: {os.environ.get('MYSQL_DB')}", file=sys.stderr, flush=True)
+print("-----------------------------------", file=sys.stderr, flush=True)
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "49494asdklfjasdklflaksdf")
 CORS(app)  # Enable CORS for frontend
