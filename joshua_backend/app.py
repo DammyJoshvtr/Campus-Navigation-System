@@ -709,9 +709,9 @@ def get_locations():
     cursor = mysql.connection.cursor()
     try:
         if all_locations:
-            cursor.execute('SELECT id, name, type, latitude, longitude, image, description, approval_status FROM locations')
+            cursor.execute('SELECT id, name, type, latitude, longitude, image, description, approval_status, floorplan FROM locations')
         else:
-            cursor.execute("SELECT id, name, type, latitude, longitude, image, description, approval_status FROM locations WHERE approval_status = 'approved'")
+            cursor.execute("SELECT id, name, type, latitude, longitude, image, description, approval_status, floorplan FROM locations WHERE approval_status = 'approved'")
         rows = cursor.fetchall()
         cursor.close()
         
@@ -727,7 +727,8 @@ def get_locations():
                 },
                 "image": row[5],
                 "description": row[6],
-                "approval_status": row[7]
+                "approval_status": row[7],
+                "floorplan": row[8]
             })
             
         return jsonify(locations_list), 200
@@ -748,9 +749,9 @@ def create_location(current_user):
     cursor = mysql.connection.cursor()
     try:
         cursor.execute('''
-            INSERT INTO locations (name, type, latitude, longitude, image, description, approval_status)
-            VALUES (%s, %s, %s, %s, %s, %s, 'approved')
-        ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description')))
+            INSERT INTO locations (name, type, latitude, longitude, image, description, approval_status, floorplan)
+            VALUES (%s, %s, %s, %s, %s, %s, 'approved', %s)
+        ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description'), data.get('floorplan')))
         mysql.connection.commit()
         loc_id = cursor.lastrowid
         cursor.close()
@@ -767,9 +768,9 @@ def update_location(current_user, id):
     try:
         cursor.execute('''
             UPDATE locations 
-            SET name=%s, type=%s, latitude=%s, longitude=%s, image=%s, description=%s
+            SET name=%s, type=%s, latitude=%s, longitude=%s, image=%s, description=%s, floorplan=%s
             WHERE id=%s
-        ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description'), id))
+        ''', (data.get('name'), data.get('type'), data.get('latitude'), data.get('longitude'), data.get('image'), data.get('description'), data.get('floorplan'), id))
         mysql.connection.commit()
         cursor.close()
         log_activity(user_id=current_user.get('id'), user_email=current_user.get('email'), action="Update Location", details=f"Admin updated location ID: {id} ('{data.get('name')}')")

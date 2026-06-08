@@ -31,8 +31,10 @@ const Locations = () => {
     longitude: "",
     description: "",
     image: "",
+    floorplan: "",
   });
   const [uploading, setUploading] = useState(false);
+  const [uploadingFloorplan, setUploadingFloorplan] = useState(false);
 
   const fetchLocations = async () => {
     try {
@@ -59,6 +61,7 @@ const Locations = () => {
         longitude: loc.coordinate?.longitude || loc.longitude || "",
         description: loc.description || "",
         image: loc.image || "",
+        floorplan: loc.floorplan || "",
       });
     } else {
       setCurrentLocation(null);
@@ -69,6 +72,7 @@ const Locations = () => {
         longitude: "",
         description: "",
         image: "",
+        floorplan: "",
       });
     }
     setIsModalOpen(true);
@@ -121,6 +125,21 @@ const Locations = () => {
       alert("Upload failed");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleFloorplanUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingFloorplan(true);
+    try {
+      const url = await uploadImage(file);
+      setFormData((prev) => ({ ...prev, floorplan: url }));
+    } catch (error) {
+      console.error("Floorplan upload failed", error);
+      alert("Floorplan upload failed");
+    } finally {
+      setUploadingFloorplan(false);
     }
   };
 
@@ -464,6 +483,54 @@ const Locations = () => {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Floorplan Upload (PNG format preferred)
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="h-16 w-16 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
+                      {formData.floorplan ? (
+                        <img
+                          src={formData.floorplan}
+                          alt="Floorplan Preview"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <ImageIcon className="h-6 w-6 text-slate-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/png, image/*"
+                        onChange={handleFloorplanUpload}
+                        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors"
+                      />
+                      {uploadingFloorplan && (
+                        <span className="text-xs text-primary-600 mt-2 block">
+                          Uploading floorplan...
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {formData.floorplan && (
+                    <div className="mt-2 flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+                      <span className="text-xs text-slate-500 font-medium truncate max-w-[20rem] md:max-w-md">
+                        {formData.floorplan.startsWith("data:")
+                          ? "✓ Floorplan stored in database (Base64)"
+                          : formData.floorplan}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, floorplan: "" })}
+                        className="text-xs text-red-600 hover:text-red-800 font-semibold transition-colors"
+                      >
+                        Remove Floorplan
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     Description
                   </label>
                   <textarea
@@ -487,7 +554,7 @@ const Locations = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={uploading}
+                  disabled={uploading || uploadingFloorplan}
                   className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
                 >
                   {currentLocation ? "Update Location" : "Save Location"}

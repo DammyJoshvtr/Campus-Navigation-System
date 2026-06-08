@@ -1,12 +1,43 @@
 import GeneralButton from "@/components/GeneralButton";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "expo-router";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Link, useRouter } from "expo-router";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { image } from "../constant/images";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 
 export default function Index() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkLoginState = async () => {
+      try {
+        const session = await AsyncStorage.getItem("@campus_session");
+        const token = await AsyncStorage.getItem("@campus_token");
+        if (session === "true" && token) {
+          router.replace("/home");
+        } else {
+          setIsChecking(false);
+        }
+      } catch (e) {
+        console.log("Failed to check session", e);
+        setIsChecking(false);
+      }
+    };
+    checkLoginState();
+  }, []);
+
+  if (isChecking) {
+    return (
+      <View className="flex-1 bg-slate-950 justify-center items-center">
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView className="flex-1">
       {/* 1. Background Image (Bottom Layer) */}

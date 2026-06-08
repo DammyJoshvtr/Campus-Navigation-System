@@ -16,7 +16,7 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { Clock, MapPin, Navigation, Star } from "lucide-react-native";
+import { Clock, MapPin, Navigation, Star, X } from "lucide-react-native";
 import React, {
   forwardRef,
   useCallback,
@@ -27,6 +27,8 @@ import React, {
 import {
   ActivityIndicator,
   Image,
+  Modal,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -40,6 +42,7 @@ type Props = {
     type: string;
     image?: string;
     description?: string;
+    floorplan?: string;
     coordinate: {
       latitude: number;
       longitude: number;
@@ -73,10 +76,13 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
     const snapPoints = useMemo(() => ["30%", "55%"], []);
 
     const [imageLoading, setImageLoading] = useState(true);
+    const [showFloorplanModal, setShowFloorplanModal] = useState(false);
 
     useEffect(() => {
       setImageLoading(true);
     }, [location?.image]);
+
+    const hasFloorplan = !!location?.floorplan && location.floorplan !== "";
 
     const backdrop = useCallback(
       (props: any) => (
@@ -224,6 +230,33 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
               </TouchableOpacity>
             </View>
 
+            {/* ── Floor Directions button ── */}
+            <View style={{ marginBottom: 12 }}>
+              <TouchableOpacity
+                style={[
+                  styles.floorBtn,
+                  {
+                    backgroundColor: hasFloorplan ? theme.primary + "15" : theme.surfaceAlt,
+                    borderColor: hasFloorplan ? theme.primary : theme.border,
+                    borderWidth: 1.5,
+                    opacity: hasFloorplan ? 1 : 0.5,
+                  },
+                ]}
+                onPress={() => hasFloorplan && setShowFloorplanModal(true)}
+                disabled={!hasFloorplan}
+              >
+                <MapPin size={16} color={hasFloorplan ? theme.primary : theme.textMuted} />
+                <Text
+                  style={[
+                    styles.floorBtnText,
+                    { color: hasFloorplan ? theme.primary : theme.textMuted },
+                  ]}
+                >
+                  Show Floor Directions
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Image */}
             <View
               style={{
@@ -319,6 +352,39 @@ const LocationBottomSheet = forwardRef<BottomSheet, Props>(
             <View style={{ height: 24 }} />
           </ScrollView>
         </BottomSheetView>
+
+        <Modal
+          visible={showFloorplanModal}
+          transparent={false}
+          animationType="slide"
+          onRequestClose={() => setShowFloorplanModal(false)}
+        >
+          <SafeAreaView style={[styles.modalContainer, { backgroundColor: theme.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]} numberOfLines={1}>
+                {location?.name} - Floor Directions
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowFloorplanModal(false)}
+                style={[styles.closeIconBtn, { backgroundColor: theme.surfaceAlt }]}
+              >
+                <X size={20} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              {location?.floorplan ? (
+                <Image
+                  source={{ uri: location.floorplan }}
+                  style={styles.floorplanImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={{ color: theme.textMuted }}>No Floor Directions Available</Text>
+              )}
+            </View>
+          </SafeAreaView>
+        </Modal>
       </BottomSheet>
     );
   },
@@ -497,5 +563,53 @@ const styles = StyleSheet.create({
   organizer: {
     fontSize: 11,
     fontFamily: "PlusJakartaSans_400Regular",
+  },
+  floorBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    width: "100%",
+  },
+  floorBtnText: {
+    fontSize: 14,
+    fontFamily: "PlusJakartaSans_700Bold",
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontFamily: "PlusJakartaSans_700Bold",
+    flex: 1,
+    marginRight: 10,
+  },
+  closeIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalBody: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
+  },
+  floorplanImage: {
+    width: "100%",
+    height: "100%",
   },
 });

@@ -33,6 +33,7 @@ export interface Location {
   image: string;
   description: string;
   approval_status: string;
+  floorplan?: string;
 }
 
 export interface Event {
