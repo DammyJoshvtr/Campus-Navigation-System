@@ -11,11 +11,20 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EAS_NO_FROZEN_LOCKFILE": "1"
+        "EAS_NO_FROZEN_LOCKFILE": "1",
+        "EXPO_PUBLIC_API_URL": "https://campus-navigation-system-production.up.railway.app",
+        "EXPO_PUBLIC_GOOGLE_MAP_KEY": "AIzaSyBOYgxDSBJu7v_UJF8kGhT967-P1Hp5FIA",
+        "EXPO_PUBLIC_ORS_API_KEY": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImVlYWYxYTJhMmRlMzRhMjVhODNmZjUzNGFjOWMzMGZlIiwiaCI6Im11cm11cjY0In0="
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EAS_NO_FROZEN_LOCKFILE": "1",
+        "EXPO_PUBLIC_API_URL": "https://campus-navigation-system-production.up.railway.app",
+        "EXPO_PUBLIC_GOOGLE_MAP_KEY": "AIzaSyBOYgxDSBJu7v_UJF8kGhT967-P1Hp5FIA",
+        "EXPO_PUBLIC_ORS_API_KEY": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImVlYWYxYTJhMmRlMzRhMjVhODNmZjUzNGFjOWMzMGZlIiwiaCI6Im11cm11cjY0In0="
+      }
     }
   },
   "submit": {
