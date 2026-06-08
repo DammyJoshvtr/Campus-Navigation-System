@@ -31,6 +31,7 @@ type Location = {
   };
   type: string;
   image?: string;
+  floorplan?: string;
 };
 
 const api = {
