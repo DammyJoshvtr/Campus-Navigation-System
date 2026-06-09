@@ -72,6 +72,12 @@ def send_otp_email(to_email, otp):
     print(f"\n==========================================")
     print(f"TESTING - OTP for {to_email} is: {otp}")
     print(f"==========================================\n")
+    if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
+        print("Mail credentials not configured. Skipping SMTP send.")
+        return False
+    import socket
+    orig_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(5.0)
     try:
         msg = Message("Your Verification Code", recipients=[to_email])
         msg.body = f"Your verification code is: {otp}"
@@ -80,6 +86,8 @@ def send_otp_email(to_email, otp):
     except Exception as e:
         print(f"Failed to send email: {e}")
         return False
+    finally:
+        socket.setdefaulttimeout(orig_timeout)
 
 # JWT Decorators
 def token_required(f):
