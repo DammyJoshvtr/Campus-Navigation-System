@@ -1,12 +1,3 @@
-/**
- * app/_layout.tsx  — Root layout
- *
- * CHANGES vs original:
- * - Added ThemeProvider so isDark / theme is available everywhere
- * - Added SafeAreaProvider (required by react-native-safe-area-context)
- * - BottomSheetModalProvider kept as-is
- */
-
 import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,

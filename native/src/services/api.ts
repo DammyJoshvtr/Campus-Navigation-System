@@ -35,11 +35,8 @@ type Location = {
 };
 
 const api = {
-  // Use the env var directly as it now contains the full path /api or just use the host
-  // If env var has /api, we shouldn't append /api again.
-  // Let's strip /api from env var if it exists, and use standard formatting.
   baseUrl: (
-    process.env.EXPO_PUBLIC_API_URL || "http://192.168.78.171:5000"
+    process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000" // For Local Testing...
   ).replace(/\/api\/?$/, ""),
 };
 

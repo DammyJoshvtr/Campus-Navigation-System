@@ -82,7 +82,7 @@ export default function Directions() {
     setValidationMsg("");
 
     // Navigate to home with route params — home screen will fetch the route
-    router.push({
+    router.navigate({
       pathname: "/home",
       params: {
         from: JSON.stringify(fromLocation),

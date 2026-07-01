@@ -109,7 +109,7 @@ export default function SavedDirections() {
       coordinate: { latitude: route.destination_lat, longitude: route.destination_lng },
     });
 
-    router.push({
+    router.navigate({
       pathname: "/home",
       params: { from, to },
     });
