@@ -163,11 +163,6 @@ async function _fetchOSRM(start: Coord, end: Coord): Promise<RouteResult> {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/**
- * Remove consecutive duplicate coordinates — these can confuse react-native-maps
- * and make the polyline flicker or draw extra segments.
- */
 function _clean(coords: Coord[]): Coord[] {
   return coords.filter((c, i) => {
     if (i === 0) return true;

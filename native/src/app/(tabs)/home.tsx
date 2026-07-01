@@ -1,15 +1,3 @@
-/**
- * app/(tabs)/home.tsx
- *
- * CHANGES vs original:
- * - Imports formatDuration/formatDistance from directionServices (single source of truth)
- * - Passes routeInfo to LocationBottomSheet so ETA shows there too
- * - routeLoading guard is now in directionService (deduplication), removed redundant check
- * - ETA box styled with theme colors (dark mode aware)
- * - Clears route when user taps map outside a marker
- * - Polyline strokeWidth slightly reduced to 5 (10 was very thick on small screens)
- */
-
 import LocationBottomSheet from "@/components/bottomSheets/LocationBottomSheet";
 import LocationError from "@/components/error/locationError";
 import { useTheme } from "@/context/ThemeContext";
@@ -281,6 +269,9 @@ export default function Home() {
     if (!userLocation) return;
     sheetRef.current?.close();
 
+    // Clear search parameters from the router to prevent conflicts
+    router.setParams({ from: undefined, to: undefined });
+
     const start = {
       latitude: userLocation.latitude,
       longitude: userLocation.longitude,
@@ -310,6 +301,7 @@ export default function Home() {
     setRouteCoords([]);
     setRouteInfo(null);
     setCurrentRouteDetails(null);
+    router.setParams({ from: undefined, to: undefined });
   };
 
   const showToast = (message: string) => {
